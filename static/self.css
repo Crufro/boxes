@@ -40,9 +40,9 @@ h1 {
 }
 
 h2 {
-    font-family: 'Luckiest Guy', cursive;
-
+    font-family: 'Bungee Shade', cursive;
     font-size: 2.5em;
+    margin-bottom: 4px;
 }
 
 h3 {
@@ -419,6 +419,49 @@ video {
     width: 100%;
 }
 
+.topbar {
+    padding: 6px 0 0;
+    margin-top: 0;
+}
+
+.topbar ul {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding-left: 10px;
+    list-style: none;
+}
+
+.topbar ul li {
+    display: inline-block;
+    font-size: 0.9em;
+}
+
+.topbar ul li.brand {
+    margin-right: 20px;
+}
+
+.topbar ul li.brand a {
+    font-family: 'Bungee Shade', cursive;
+    font-size: 1.4em;
+    color: #333;
+    letter-spacing: 0.03em;
+}
+
+.topbar ul li.right {
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.topbar ul li.right ~ li.right {
+    margin-left: 0;
+}
+
+.topbar ul li a {
+    color: #555;
+    margin-right: 10px;
+}
+
 .linkbar {
     padding-bottom: 0px;
     margin-top: 0px;
@@ -460,6 +503,10 @@ img[id|=sample] {
 
 .menu ul li {
     padding: 5px 5px 5px 10px;
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 0 12px;
+    align-items: baseline;
 }
 
 .menu ul li:hover {
@@ -472,16 +519,13 @@ img[id|=sample] {
     color: #bbb;
 }
 
-.menu ul li span {
-    display: none;
-    font-size: 1.8em;
-    font-weight: bold;
-    color: #333;
-    margin-left: 10px;
+.item-desc {
+    font-size: 0.83em;
+    color: #888;
 }
 
-.menu ul li:hover span {
-    display: inline-block;
+.menu ul li:hover .item-desc {
+    color: #ccc;
 }
 
 .menu h3 {
@@ -490,6 +534,17 @@ img[id|=sample] {
 
 textarea {
     font-family: monospace;
+}
+
+.gallery-intro a:hover {
+    text-decoration: underline;
+}
+
+.gallery-intro {
+    margin: 0 0 16px;
+    color: #444;
+    font-size: 0.95em;
+    line-height: 1.5;
 }
 
 .gallery-layout {
@@ -543,15 +598,41 @@ textarea {
     vertical-align: bottom;
     width : 200px;
     margin : 5px;
-    margin-top : 15px;
+    margin-top : 6px;
     font-weight: bold;
+}
+
+.gallery a {
+    display: block;
+}
+
+.gallery-name {
+    display: block;
+    line-height: 1.2;
+    padding-bottom: 4px;
+}
+
+.gallery .img-wrap {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    display: block;
 }
 
 .gallery img {
     width : 200px;
     height : 200px;
-    object-fit : contain;
+    object-fit : cover;
     background : white;
+    transition: transform 0.15s ease;
+}
+
+.gallery:hover img {
+    transform: scale(1.04);
+}
+
+.gallery:hover a {
+    text-decoration: underline;
 }
 
 .gallery_missing::before {

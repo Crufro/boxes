@@ -246,17 +246,9 @@ class BServer:
 <body onload="initArgsPage({len(box.argparser._action_groups) - 3})">
 
 <div class="argumentcontainer">
-<div style="float: left;">
-<a href="./{langparam}"><h1>{_("Boxes.py")}</h1></a>
-</div>
-<div style="width: 120px; float: right;">
-<img alt="self-Logo" src="{self.static_url}/boxes-logo.svg" width="120">
-</div>
-<div>
-<div class="clear"></div>
-<hr>
-<div class="linkbar">
+<div class="topbar">
 <ul>
+  <li class="brand"><a href="./{langparam}">{_("Boxes.py")}</a></li>
 {self.genLinks(lang)}
 </ul>
 </div>
@@ -316,18 +308,14 @@ class BServer:
     <button class="btn-ghost" name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
 </div>
 </form>
-</div>
-
-<div class="clear"></div>
-<hr>
-<div class="description">
 """)
-        if box.description:
-            result.append(
-                markdown.markdown(_(box.description), extensions=["extra"])
-                .replace('src="static/', f'src="{self.static_url}/'))
+        # description commented out for now
+        # if box.description:
+        #     result.append(
+        #         markdown.markdown(_(box.description), extensions=["extra"])
+        #         .replace('src="static/', f'src="{self.static_url}/'))
 
-        result.append('''</div>
+        result.append('''
 </div>
 </body>
 </html>
@@ -352,7 +340,6 @@ class BServer:
 </head>
 <body onload="initPage()">
 <div class="container">
-<div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
 <div class="modenav">
 <span class="modebutton"><a href="Gallery">{_("Gallery")}</a></span>
@@ -377,18 +364,14 @@ class BServer:
   <div id="{nr}">\n   <ul>\n''')
             for box in group.generators:
                 name = box.__name__
-                docs = ""
-                if box.__doc__:
-                    docs = " - " + _(box.__doc__)
-                result.append(f"""     <li class="thumbnail" data-thumbnail="{self.static_url}/samples/{name}-thumb.jpg" id="search_id_{name}"><a href="{name}{langparam}">{_(name)}</a>{docs}</li>\n""")
+                desc = f'<span class="item-desc">{html.escape(_(box.__doc__))}</span>' if box.__doc__ else ""
+                result.append(f"""     <li class="thumbnail" data-thumbnail="{self.static_url}/samples/{name}-thumb.jpg" id="search_id_{name}"><a href="{name}{langparam}">{_(name)}</a>{desc}</li>\n""")
             result.append("   </ul>\n  </div>\n")
         result.append(f"""
 </div>
 
-<div style="width: 5%; float: left;"></div>
 <div class="clear"></div>
 <hr>
-</div>
 </div>
 </body>
 </html>
@@ -455,40 +438,25 @@ class BServer:
             langparam = "?language=" + lang_name
 
         return f"""
-<h1><a href="./{langparam}">{_("Boxes.py")}</a></h1>
-<p>{_("Create boxes and more with a laser cutter!")}</p>
-<p>
-{_('''
-        <a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}
-</p>
-</div>
-
-<div style="width: 25%; float: left;">
-<img alt="self-Logo" src="{self.static_url}/boxes-logo.svg" width="250">
-</div>
-
-<div>
-
-<div class="clear"></div>
-<hr/>
-<div class="linkbar">
+<div class="topbar">
 <ul>
+  <li class="brand"><a href="./{langparam}">{_("Boxes.py")}</a></li>
 {self.genLinks(lang)}
   <li class="right">\U0001f50d <input autocomplete="off" type="search" oninput="filterSearchItems();" name="search" id="search" placeholder="Search"></li>
 </ul>
 </div>
-<hr/>
+<hr>
 """
 
     def genLinks(self, lang):
         _ = lang.gettext
-        links = [("https://florianfesti.github.io/boxes/html/usermanual.html", _("Help")),
-                 ("https://hackaday.io/project/10649-boxespy", _("Home Page")),
-                 ("https://florianfesti.github.io/boxes/html/index.html", _("Documentation")),
-                 ("https://github.com/florianfesti/boxes", _("Sources"))]
+        links = [("https://hackaday.io/project/10649-boxespy", _("Home")),
+                 ("https://florianfesti.github.io/boxes/html/index.html", _("Docs")),
+                 ("https://github.com/florianfesti/boxes", _("Sources")),
+                 ("https://florianfesti.github.io/boxes/html/give_back.html", _("Give")),
+                 ("https://florianfesti.github.io/boxes/html/usermanual.html", _("Help"))]
         if self.legal_url:
             links.append((self.legal_url, _("Legal")))
-        links.append(("https://florianfesti.github.io/boxes/html/give_back.html", _("Give Back")))
 
         result = [f'  <li><a href="{url}" target="_blank" rel="noopener">{txt}</a></li>\n' for url, txt in links]
 
@@ -603,7 +571,6 @@ class BServer:
 </head>
 <body onload="initPage()">
 <div class="container">
-<div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
 <div class="gallery-layout">
 <div class="toc-col">
@@ -613,6 +580,7 @@ class BServer:
 </div>
 </div>
 <div class="gallery-col">
+<p class="gallery-intro">{_('''<a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}</p>
 """]
         for nr, group in enumerate(self.groups):
             title = _(group.title)
@@ -627,13 +595,12 @@ class BServer:
                 if not os.path.exists(static_filename):
                     result.append(f"""  <span class="gallery_missing" id="search_id_{name}"><a href="{href}">{_(name)}</a></span>\n""")
                 else:
-                    result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><img alt="{alt}" src="{thumbnail}"><br>{_(name)}</a></span>\n""")
+                    result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><span class="img-wrap"><img alt="{alt}" src="{thumbnail}"></span><span class="gallery-name">{_(name)}</span></a></span>\n""")
 
         result.append("""
 </div>
 </div>
 <hr>
-</div>
 </div>
 </body>
 </html>
