@@ -584,6 +584,14 @@ class BServer:
         if lang_name:
             langparam = "?language=" + lang_name
 
+        def slug(title):
+            return re.sub(r'[^a-z0-9-]', '', title.lower().replace(' ', '-'))
+
+        sidebar_items = "".join(
+            f'<li><a href="#{slug(_(g.title))}" data-section="{slug(_(g.title))}">{_(g.title)}</a></li>'
+            for g in self.groups
+        )
+
         result = [f"""
 {self.genHTMLStart(lang)}
 <head>
@@ -594,12 +602,19 @@ class BServer:
     {self.genHTMLJS()}
 </head>
 <body onload="initPage()">
+<div class="gallery-layout">
+<nav class="sidebar">
+  <div class="sidebar-title">Contents</div>
+  <ul>{sidebar_items}</ul>
+</nav>
+<div class="gallery-main">
 <div class="container">
 <div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
 """]
         for nr, group in enumerate(self.groups):
-            result.append(f"<h2>{_(group.title)}</h2>\n")
+            title = _(group.title)
+            result.append(f'<h2 id="{slug(title)}">{title}</h2>\n')
             for box in group.generators:
                 name = box.__name__
                 fn = f"samples/{name}-thumb.jpg"
@@ -614,6 +629,9 @@ class BServer:
 
         result.append("""
 <hr>
+</div>
+</div>
+</div>
 </div>
 </body>
 </html>
