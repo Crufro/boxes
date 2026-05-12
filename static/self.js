@@ -97,7 +97,7 @@ function initPage(num_hide = null) {
 
 function initArgsPage(num_hide = null) {
     initPage(num_hide);
-    const i = document.querySelectorAll("td > input, td > select, td > textarea");
+    const i = document.querySelectorAll(".field-control input, .field-control select, .field-control textarea");
     for (let el of i) {
 	el.addEventListener("change", refreshPreview);
     }
@@ -159,7 +159,6 @@ function previewFullscreen() {
 document.addEventListener("fullscreenchange", () => {
     const btn = document.getElementById("preview_fs_btn");
     if (!btn) return;
-    btn.textContent = document.fullscreenElement ? "×" : "⛶";
     btn.title = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen";
 });
 

@@ -195,8 +195,10 @@ class BServer:
             viewname = name[len(prefix) + 1:]
 
         default = defaults.get(name, None)
-        row = """<tr><td id="%s"><label for="%s">%s</label></td><td>%%s</td><td id="%s">%s</td></tr>\n""" % \
-              (name + "_id", name, _(viewname), name + "_description", "" if not a.help else markdown.markdown(_(a.help)))
+        help_html = ""
+        if a.help:
+            help_html = f'<span class="field-help">{markdown.markdown(_(a.help))}</span>'
+
         if (isinstance(a, argparse._StoreAction) and
                 hasattr(a.type, "html")):
             input = a.type.html(name, default or a.default, _)
@@ -214,7 +216,7 @@ class BServer:
             input = """<input name="%s" id="%s" aria-labeledby="%s %s" type="text" value="%s">""" % \
                     (name, name, name + "_id", name + "_description", default or a.default)
 
-        return row % input
+        return f'<div class="field"><label id="{name}_id" for="{name}">{_(viewname)}</label><div class="field-control">{input}{help_html}</div></div>\n'
 
     def args2html_cached(self, name, box, lang, action="", defaults={}):
         if defaults == {}:
@@ -296,24 +298,23 @@ class BServer:
             if len(group._group_actions) == 1 and isinstance(group._group_actions[0], argparse._HelpAction):
                 continue
             prefix = getattr(group, "prefix", None)
-            result.append(f'''<h3 id="h-{groupid}" data-id="{groupid}" role="button" aria-expanded="true" tabindex="0" class="toggle open">{_(group.title)}</h3>\n<table role="presentation" id="{groupid}">\n''')
+            result.append(f'''<div class="settings-group"><h3 id="h-{groupid}" data-id="{groupid}" role="button" aria-expanded="true" tabindex="0" class="toggle open">{_(group.title)}</h3>\n<div class="settings-fields" id="{groupid}">\n''')
 
             for a in group._group_actions:
                 if a.dest in ("input", "output"):
                     continue
                 result.append(self.arg2html(a, prefix, defaults, _))
-            result.append("</table>")
+            result.append("</div></div>")
             groupid += 1
 
         result.append(f"""
 <input type="hidden" name="language" id="language" value="{lang_name}">
-
-<p>
-    <button name="render" value="1" formtarget="_blank">{_("Generate")}</button>
-    <button name="render" value="2" formtarget="_self">{_("Download")}</button>
-    <button name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
-    <button name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
-</p>
+<div class="form-actions">
+    <button class="btn-primary" name="render" value="1" formtarget="_blank">{_("Generate")}</button>
+    <button class="btn-secondary" name="render" value="2" formtarget="_self">{_("Download")}</button>
+    <button class="btn-secondary" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
+    <button class="btn-ghost" name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
+</div>
 </form>
 </div>
 
