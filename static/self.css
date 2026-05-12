@@ -383,8 +383,16 @@ table tr p {
 
 #preview:fullscreen {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     background: #fff;
+    overflow: hidden;
+}
+
+#preview:fullscreen #preview_main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
 }
 
 #preview:fullscreen #preview_viewport {
@@ -399,6 +407,53 @@ table tr p {
 #preview:fullscreen #preview_img {
     max-height: calc(100vh - 60px);
 }
+
+#preview_sidebar_btn {
+    display: none;
+    background: transparent !important;
+    border-color: transparent !important;
+    opacity: 0.5;
+}
+
+#preview_sidebar_btn:hover {
+    opacity: 1;
+    background: #e8e0d0 !important;
+    border-color: transparent !important;
+}
+
+#preview:fullscreen #preview_sidebar_btn {
+    display: inline-flex;
+}
+
+#preview:fullscreen #preview_sidebar {
+    flex-shrink: 0;
+    width: 360px;
+    margin-right: -360px;
+    overflow-y: auto;
+    transition: margin-right 0.25s ease;
+    background: #FFF8EA;
+    border-left: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+#preview:fullscreen.sidebar-open #preview_sidebar {
+    margin-right: 0;
+}
+
+#preview:fullscreen #preview_sidebar #arguments {
+    padding: 12px;
+    flex: 1;
+}
+
+#preview:fullscreen #preview_sidebar .form-actions {
+    padding: 12px;
+    border-top: 1px solid #e0d8cc;
+    background: #FFF8EA;
+    position: sticky;
+    bottom: 0;
+}
+
 
 hr {
     display: block;

@@ -260,26 +260,27 @@ class BServer:
 <h2 style="margin: 0px 0px 0px 20px;">{_(name)}</h2>
         <p>{_(box.__doc__) if box.__doc__ else ""}</p>
 <div id="preview">
-  <div id="preview_toolbar">
-    <div id="preview_controls">
-      <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
-      <span id="preview_scale_label">Fit</span>
-      <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
-      <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
-      <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Fullscreen')}">&#x26F6;</button>
+  <div id="preview_main">
+    <div id="preview_toolbar">
+      <div id="preview_controls">
+        <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
+        <span id="preview_scale_label">Fit</span>
+        <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
+        <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
+        <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Fullscreen')}">&#x26F6;</button>
+        <button type="button" id="preview_sidebar_btn" onclick="previewToggleSidebar()" title="{_('Settings')}" aria-pressed="false">&#x2630;</button>
+      </div>
+      <div id="preview_actions">
+        <span id="preview_status"></span>
+      </div>
     </div>
-    <div id="preview_actions">
-      <span id="preview_status"></span>
-      <button form="arguments" name="render" value="1" formtarget="_blank">{_("Generate")}</button>
-      <button form="arguments" name="render" value="2" formtarget="_self">{_("Download")}</button>
-      <button form="arguments" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
+    <div id="preview_viewport">
+      <figure id="preview_figure">
+        <img id="preview_img" src="{self.static_url}/nothing.png">
+      </figure>
     </div>
   </div>
-  <div id="preview_viewport">
-    <figure id="preview_figure">
-      <img id="preview_img" src="{self.static_url}/nothing.png">
-    </figure>
-  </div>
+  <div id="preview_sidebar"></div>
 </div>
 <form id="arguments" action="{action}" method="GET" rel="nofollow">
         """]
@@ -306,6 +307,7 @@ class BServer:
     <button class="btn-secondary" name="render" value="2" formtarget="_self">{_("Download")}</button>
     <button class="btn-secondary" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
     <button class="btn-ghost" name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
+    <button class="btn-ghost" type="button" onclick="resetToDefaults()">{_("Reset")}</button>
 </div>
 </form>
 """)

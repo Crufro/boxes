@@ -97,9 +97,13 @@ function initPage(num_hide = null) {
 
 function initArgsPage(num_hide = null) {
     initPage(num_hide);
+    window._argumentsFormParent = document.getElementById("arguments").parentNode;
     const i = document.querySelectorAll(".field-control input, .field-control select, .field-control textarea");
+    window._formDefaults = {};
     for (let el of i) {
         el.addEventListener("change", refreshPreview);
+        const key = (el.type === "checkbox" || el.type === "radio") ? el.name + "_" + el.value : (el.name || el.id);
+        window._formDefaults[key] = (el.type === "checkbox" || el.type === "radio") ? el.checked : el.value;
     }
     refreshPreview();
     const chk = document.getElementById("preview_chk");
@@ -158,10 +162,48 @@ function previewFullscreen() {
     }
 }
 
+function resetToDefaults() {
+    if (!window._formDefaults) return;
+    const fields = document.querySelectorAll("#arguments .field-control input, #arguments .field-control select, #arguments .field-control textarea");
+    for (const el of fields) {
+        if (el.type === "checkbox" || el.type === "radio") {
+            const key = el.name + "_" + el.value;
+            if (key in window._formDefaults) el.checked = window._formDefaults[key];
+        } else {
+            const key = el.name || el.id;
+            if (key in window._formDefaults) el.value = window._formDefaults[key];
+        }
+    }
+    refreshPreview();
+}
+
+function previewToggleSidebar() {
+    const preview = document.getElementById("preview");
+    const btn = document.getElementById("preview_sidebar_btn");
+    const isOpen = preview.classList.toggle("sidebar-open");
+    if (btn) btn.setAttribute("aria-pressed", isOpen ? "true" : "false");
+}
+
 document.addEventListener("fullscreenchange", () => {
     const btn = document.getElementById("preview_fs_btn");
-    if (!btn) return;
-    btn.title = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen";
+    const sidebar = document.getElementById("preview_sidebar");
+    const preview = document.getElementById("preview");
+
+    if (document.fullscreenElement) {
+        if (btn) btn.title = "Exit fullscreen";
+        const form = document.getElementById("arguments");
+        if (form && sidebar) sidebar.appendChild(form);
+        if (preview) preview.classList.add("sidebar-open");
+        const sidebarBtn = document.getElementById("preview_sidebar_btn");
+        if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "true");
+    } else {
+        if (btn) btn.title = "Fullscreen";
+        const form = document.getElementById("arguments");
+        if (form && window._argumentsFormParent) window._argumentsFormParent.appendChild(form);
+        if (preview) preview.classList.remove("sidebar-open");
+        const sidebarBtn = document.getElementById("preview_sidebar_btn");
+        if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "false");
+    }
 });
 
 /*** GrindFinity ******************************************/
