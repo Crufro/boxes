@@ -97,37 +97,132 @@ function initPage(num_hide = null) {
 
 function initArgsPage(num_hide = null) {
     initPage(num_hide);
-    const i = document.querySelectorAll("td > input, td > select, td > textarea");
+    window._argumentsFormParent = document.getElementById("arguments").parentNode;
+    window._formActionsParent = document.querySelector(".form-actions")?.parentNode;
+    const i = document.querySelectorAll(".field-control input, .field-control select, .field-control textarea");
+    window._formDefaults = {};
     for (let el of i) {
-	el.addEventListener("change", refreshPreview);
+        el.addEventListener("change", refreshPreview);
+        const key = (el.type === "checkbox" || el.type === "radio") ? el.name + "_" + el.value : (el.name || el.id);
+        window._formDefaults[key] = (el.type === "checkbox" || el.type === "radio") ? el.checked : el.value;
     }
     refreshPreview();
-    document.getElementById("preview_chk").addEventListener("change", togglePreview);
+    const chk = document.getElementById("preview_chk");
+    if (chk) chk.addEventListener("change", togglePreview);
+    const form = document.getElementById("arguments");
+    if (form) form.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+    previewMaximize();
 }
 
 /*** Preview ****************************************/
 
-preview_scale=100;
+preview_scale = 100;
+preview_base_width = null;
+
+function updatePreviewScale() {
+    const img = document.getElementById("preview_img");
+    const viewport = document.getElementById("preview_viewport");
+    if (preview_base_width === null) {
+        preview_base_width = img.getBoundingClientRect().width;
+    }
+    img.style.width = (preview_base_width * preview_scale / 100) + "px";
+    img.style.height = "auto";
+    img.style.maxWidth = "none";
+    img.style.maxHeight = "none";
+    const label = document.getElementById("preview_scale_label");
+    if (label) label.textContent = Math.round(preview_scale) + "%";
+    if (viewport) viewport.classList.add("zoomed");
+}
+
+function previewZoom(factor) {
+    preview_scale *= factor;
+    updatePreviewScale();
+}
+
+function previewFit() {
+    const img = document.getElementById("preview_img");
+    img.style.width = "";
+    img.style.height = "";
+    img.style.maxWidth = "";
+    img.style.maxHeight = "";
+    preview_scale = 100;
+    preview_base_width = null;
+    const label = document.getElementById("preview_scale_label");
+    if (label) label.textContent = "Fit";
+    const viewport = document.getElementById("preview_viewport");
+    if (viewport) viewport.classList.remove("zoomed");
+}
 
 function refreshPreview() {
-    if (document.getElementById("preview_img").hidden)
-	return;
+    const img = document.getElementById("preview_img");
+    const status = document.getElementById("preview_status");
+    if (status) status.textContent = "Loading…";
 
     const form = document.querySelector("#arguments");
     const formData = new FormData(form);
     formData.set("format", "svg");
-
     const url = form.action + "?" + new URLSearchParams(formData).toString() + "&render=4";
 
-    const preview = document.getElementById("preview_img");
-    preview.src = url;
+    img.onload = () => {
+        if (status) status.textContent = "";
+        if (preview_scale !== 100) {
+            preview_base_width = null;
+            updatePreviewScale();
+        }
+    };
+    img.onerror = () => { if (status) status.textContent = "Error"; };
+    img.src = url;
 }
 
-function togglePreview() {
-    document.getElementById("preview").hidden = !event.target.checked;
-    if (event.target.checked)
-	refreshPreview();
+function previewFullscreen() {
+    const preview = document.getElementById("preview");
+    const btn = document.getElementById("preview_fs_btn");
+    const isFullpage = preview.classList.toggle("fullpage");
+    document.body.style.overflow = isFullpage ? "hidden" : "";
+    if (btn) btn.setAttribute("aria-pressed", isFullpage ? "true" : "false");
 }
+
+function previewMaximize() {
+    const preview = document.getElementById("preview");
+    const sidebar = document.getElementById("preview_sidebar");
+    const form = document.getElementById("arguments");
+    const actions = document.querySelector(".form-actions");
+    if (form && sidebar) sidebar.appendChild(form);
+    if (actions && sidebar) sidebar.appendChild(actions);
+    preview.classList.add("maximized", "sidebar-open");
+    const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
+    if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "true");
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        const preview = document.getElementById("preview");
+        if (preview && preview.classList.contains("fullpage")) previewFullscreen();
+    }
+});
+
+function resetToDefaults() {
+    if (!window._formDefaults) return;
+    const fields = document.querySelectorAll("#arguments .field-control input, #arguments .field-control select, #arguments .field-control textarea");
+    for (const el of fields) {
+        if (el.type === "checkbox" || el.type === "radio") {
+            const key = el.name + "_" + el.value;
+            if (key in window._formDefaults) el.checked = window._formDefaults[key];
+        } else {
+            const key = el.name || el.id;
+            if (key in window._formDefaults) el.value = window._formDefaults[key];
+        }
+    }
+    refreshPreview();
+}
+
+function previewToggleSidebar() {
+    const preview = document.getElementById("preview");
+    const btn = document.getElementById("preview_sidebar_open_btn");
+    const isOpen = preview.classList.toggle("sidebar-open");
+    if (btn) btn.setAttribute("aria-pressed", isOpen ? "true" : "false");
+}
+
 
 /*** GrindFinity ******************************************/
 
@@ -485,6 +580,22 @@ function showAll(str) {
     for (let id of matching_ids) {
         id.style.display = "inline-block";
     }
+    for (let group of document.querySelectorAll('.gallery-group')) {
+        group.style.display = "";
+    }
+    getNoResultsEl().style.display = "none";
+}
+
+function getNoResultsEl() {
+    let el = document.getElementById("gallery-no-results");
+    if (!el) {
+        el = document.createElement("p");
+        el.id = "gallery-no-results";
+        el.textContent = "No results found.";
+        el.style.display = "none";
+        document.querySelector(".gallery-col").appendChild(el);
+    }
+    return el;
 }
 
 function showOnly(str) {
@@ -496,8 +607,15 @@ function showOnly(str) {
             id.style.display = "inline-block";
         } else {
             id.style.display = "none";
-	}
+        }
     }
+    let anyVisible = false;
+    for (let group of document.querySelectorAll('.gallery-group')) {
+        const visible = group.querySelectorAll('[id^="search_id_"]:not([style*="display: none"])');
+        group.style.display = visible.length > 0 ? "" : "none";
+        if (visible.length > 0) anyVisible = true;
+    }
+    getNoResultsEl().style.display = anyVisible ? "none" : "";
 }
 
 function filterSearchItems() {

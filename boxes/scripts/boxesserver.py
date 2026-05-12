@@ -195,8 +195,10 @@ class BServer:
             viewname = name[len(prefix) + 1:]
 
         default = defaults.get(name, None)
-        row = """<tr><td id="%s"><label for="%s">%s</label></td><td>%%s</td><td id="%s">%s</td></tr>\n""" % \
-              (name + "_id", name, _(viewname), name + "_description", "" if not a.help else markdown.markdown(_(a.help)))
+        help_html = ""
+        if a.help:
+            help_html = f'<span class="field-help">{markdown.markdown(_(a.help))}</span>'
+
         if (isinstance(a, argparse._StoreAction) and
                 hasattr(a.type, "html")):
             input = a.type.html(name, default or a.default, _)
@@ -214,7 +216,7 @@ class BServer:
             input = """<input name="%s" id="%s" aria-labeledby="%s %s" type="text" value="%s">""" % \
                     (name, name, name + "_id", name + "_description", default or a.default)
 
-        return row % input
+        return f'<div class="field"><label id="{name}_id" for="{name}">{_(viewname)}</label><div class="field-control">{input}{help_html}</div></div>\n'
 
     def args2html_cached(self, name, box, lang, action="", defaults={}):
         if defaults == {}:
@@ -235,7 +237,7 @@ class BServer:
 
         result = [f"""{self.genHTMLStart(lang)}
 <head>
-    <title>{_("%s - Boxes") % _(name)}</title>
+    <title>{_("%s - Boxes.py") % _(name)}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
@@ -244,24 +246,46 @@ class BServer:
 <body onload="initArgsPage({len(box.argparser._action_groups) - 3})">
 
 <div class="argumentcontainer">
-<div style="float: left;">
-<a href="./{langparam}"><h1>{_("Boxes.py")}</h1></a>
-</div>
-<div style="width: 120px; float: right;">
-<img alt="self-Logo" src="{self.static_url}/boxes-logo.svg" width="120">
-</div>
-<div>
-<div class="clear"></div>
-<hr>
-<div class="linkbar">
+<div class="topbar">
 <ul>
-{self.genLinks(lang, True)}
+  <li class="brand"><a href="./{langparam}">{_("Boxes.py")}</a></li>
+{self.genLinks(lang)}
 </ul>
 </div>
 <hr>
 
+<!-- <div class="generator-thumb">
+<img src="{self.static_url}/samples/{box.__class__.__name__}.jpg" onerror="this.style.display='none'" alt="">
+</div>
 <h2 style="margin: 0px 0px 0px 20px;">{_(name)}</h2>
-        <p>{_(box.__doc__) if box.__doc__ else ""}</p>
+<p>{_(box.__doc__) if box.__doc__ else ""}</p> -->
+<div id="preview">
+  <div id="preview_main">
+    <div id="preview_toolbar">
+      <div id="preview_controls">
+        <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
+        <span id="preview_scale_label">Fit</span>
+        <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
+        <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
+      </div>
+      <div id="preview_actions">
+        <span id="preview_status"></span>
+        <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Toggle maximize')}">&#x26F6;</button>
+        <button type="button" id="preview_sidebar_open_btn" onclick="previewToggleSidebar()" title="{_('Settings')}">&#x2630;</button>
+      </div>
+    </div>
+    <div id="preview_viewport">
+      <figure id="preview_figure">
+        <img id="preview_img" src="{self.static_url}/nothing.png">
+      </figure>
+    </div>
+  </div>
+  <div id="preview_sidebar">
+    <div id="preview_sidebar_header">
+      <span>{_(name)}</span>
+    </div>
+  </div>
+</div>
 <form id="arguments" action="{action}" method="GET" rel="nofollow">
         """]
         groupid = 0
@@ -271,55 +295,33 @@ class BServer:
             if len(group._group_actions) == 1 and isinstance(group._group_actions[0], argparse._HelpAction):
                 continue
             prefix = getattr(group, "prefix", None)
-            result.append(f'''<h3 id="h-{groupid}" data-id="{groupid}" role="button" aria-expanded="true" tabindex="0" class="toggle open">{_(group.title)}</h3>\n<table role="presentation" id="{groupid}">\n''')
+            result.append(f'''<div class="settings-group"><h3 id="h-{groupid}" data-id="{groupid}" role="button" aria-expanded="true" tabindex="0" class="toggle open">{_(group.title)}</h3>\n<div class="settings-fields" id="{groupid}">\n''')
 
             for a in group._group_actions:
                 if a.dest in ("input", "output"):
                     continue
                 result.append(self.arg2html(a, prefix, defaults, _))
-            result.append("</table>")
+            result.append("</div></div>")
             groupid += 1
 
         result.append(f"""
 <input type="hidden" name="language" id="language" value="{lang_name}">
-
-<p>
-    <button name="render" value="1" formtarget="_blank">{_("Generate")}</button>
-    <button name="render" value="2" formtarget="_self">{_("Download")}</button>
-    <button name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
-    <button name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
-</p>
 </form>
+<div class="form-actions">
+    <button class="btn-primary" form="arguments" name="render" value="1" formtarget="_blank">{_("Generate")}</button>
+    <button class="btn-secondary" form="arguments" name="render" value="2" formtarget="_self">{_("Download")}</button>
+    <button class="btn-secondary" form="arguments" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
+    <button class="btn-ghost" form="arguments" name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
+    <button class="btn-ghost" type="button" onclick="resetToDefaults()">{_("Reset")}</button>
 </div>
-
-<div class="clear"></div>
-<hr>
-<div class="description">
 """)
-        no_img_msg = _('There is no image yet. Please donate an image of your project on <a href=&quot;https://github.com/florianfesti/boxes/issues/628&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>GitHub</a>!')
+        # description commented out for now
+        # if box.description:
+        #     result.append(
+        #         markdown.markdown(_(box.description), extensions=["extra"])
+        #         .replace('src="static/', f'src="{self.static_url}/'))
 
-        if box.description:
-            result.append(
-                markdown.markdown(_(box.description), extensions=["extra"])
-                .replace('src="static/', f'src="{self.static_url}/'))
-
-        result.append(f'''<div>
-<img style="width:100%;" src="{self.static_url}/samples/{box.__class__.__name__}.jpg" onerror="this.parentElement.innerHTML = '{no_img_msg}';" alt="Picture of box.">
-</div>
-</div>
-</div>
-<div id="preview">
-  <div id="preview_buttons">
-    {_("Zoom: ")}
-    <button type="button" onclick="preview_scale/=1.2; document.getElementById('preview_img').style.width = preview_scale + '%';">-</button>
-    <button type="button" onclick="preview_scale*= 1.2; document.getElementById('preview_img').style.width = preview_scale + '%';" >+</button>
-    <button type="button" onclick="preview_scale=100; document.getElementById('preview_img').style.width = preview_scale + '%';" >{_("Reset")}</button>
-  </div>
-<div style="overflow: auto;">
-<figure id="preview_figure" style="width: max-content;">
-<img id="preview_img" style="width:100%" src="{self.static_url}/nothing.png">
-</figure>
-</div>
+        result.append('''
 </div>
 </body>
 </html>
@@ -344,7 +346,6 @@ class BServer:
 </head>
 <body onload="initPage()">
 <div class="container">
-<div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
 <div class="modenav">
 <span class="modebutton"><a href="Gallery">{_("Gallery")}</a></span>
@@ -369,18 +370,14 @@ class BServer:
   <div id="{nr}">\n   <ul>\n''')
             for box in group.generators:
                 name = box.__name__
-                docs = ""
-                if box.__doc__:
-                    docs = " - " + _(box.__doc__)
-                result.append(f"""     <li class="thumbnail" data-thumbnail="{self.static_url}/samples/{name}-thumb.jpg" id="search_id_{name}"><a href="{name}{langparam}">{_(name)}</a>{docs}</li>\n""")
+                desc = f'<span class="item-desc">{html.escape(_(box.__doc__))}</span>' if box.__doc__ else ""
+                result.append(f"""     <li class="thumbnail" data-thumbnail="{self.static_url}/samples/{name}-thumb.jpg" id="search_id_{name}"><a href="{name}{langparam}">{_(name)}</a>{desc}</li>\n""")
             result.append("   </ul>\n  </div>\n")
         result.append(f"""
 </div>
 
-<div style="width: 5%; float: left;"></div>
 <div class="clear"></div>
 <hr>
-</div>
 </div>
 </body>
 </html>
@@ -447,45 +444,26 @@ class BServer:
             langparam = "?language=" + lang_name
 
         return f"""
-<h1><a href="./{langparam}">{_("Boxes.py")}</a></h1>
-<p>{_("Create boxes and more with a laser cutter!")}</p>
-<p>
-{_('''
-        <a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}
-</p>
-</div>
-
-<div style="width: 25%; float: left;">
-<img alt="self-Logo" src="{self.static_url}/boxes-logo.svg" width="250">
-</div>
-
-<div>
-
-<div class="clear"></div>
-<hr/>
-<div class="linkbar">
+<div class="topbar">
 <ul>
+  <li class="brand"><a href="./{langparam}">{_("Boxes.py")}</a></li>
 {self.genLinks(lang)}
-  <li class="right">\U0001f50d <input autocomplete="off" type="search" oninput="filterSearchItems();" name="search" id="search" placeholder="Search"></li>
 </ul>
 </div>
-<hr/>
+<hr>
 """
 
-    def genLinks(self, lang, preview=False):
+    def genLinks(self, lang):
         _ = lang.gettext
-        links = [("https://florianfesti.github.io/boxes/html/usermanual.html", _("Help")),
-                 ("https://hackaday.io/project/10649-boxespy", _("Home Page")),
-                 ("https://florianfesti.github.io/boxes/html/index.html", _("Documentation")),
-                 ("https://github.com/florianfesti/boxes", _("Sources"))]
+        links = [("https://hackaday.io/project/10649-boxespy", _("Home")),
+                 ("https://florianfesti.github.io/boxes/html/index.html", _("Docs")),
+                 ("https://github.com/florianfesti/boxes", _("Sources")),
+                 ("https://florianfesti.github.io/boxes/html/give_back.html", _("Give")),
+                 ("https://florianfesti.github.io/boxes/html/usermanual.html", _("Help"))]
         if self.legal_url:
             links.append((self.legal_url, _("Legal")))
-        links.append(("https://florianfesti.github.io/boxes/html/give_back.html", _("Give Back")))
 
         result = [f'  <li><a href="{url}" target="_blank" rel="noopener">{txt}</a></li>\n' for url, txt in links]
-
-        if preview:
-            result.append(f'    <li class="right">{_("Preview")} <input id="preview_chk" type="checkbox" checked="checked"> </li>\n')
 
         result.append(f'  <li class="right">{self.genHTMLLanguageSelection(lang)}  </li>\n')
         return "".join(result)
@@ -579,6 +557,14 @@ class BServer:
         if lang_name:
             langparam = "?language=" + lang_name
 
+        def slug(title):
+            return re.sub(r'[^a-z0-9-]', '', title.lower().replace(' ', '-'))
+
+        toc_items = "".join(
+            f'<li><a href="#{slug(_(g.title))}">{_(g.title)}</a></li>'
+            for g in self.groups
+        )
+
         result = [f"""
 {self.genHTMLStart(lang)}
 <head>
@@ -590,15 +576,21 @@ class BServer:
 </head>
 <body onload="initPage()">
 <div class="container">
-<div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
-<div class="modenav">
-<span class="modebutton modeactive">{_("Gallery")}</span>
-<span class="modebutton"><a href="Menu">{_("Menu")}</a></span>
+<div class="gallery-layout">
+<div class="toc-col">
+<div class="toc-box">
+  <div class="toc-title">Contents</div>
+  <ol>{toc_items}</ol>
 </div>
+</div>
+<div class="gallery-col">
+<p class="gallery-intro">{_('''<a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}</p>
+<div class="gallery-search">\U0001f50d <input autocomplete="off" type="search" oninput="filterSearchItems();" name="search" id="search" placeholder="Search generators..."></div>
 """]
         for nr, group in enumerate(self.groups):
-            result.append(f"<h2>{_(group.title)}</h2>\n")
+            title = _(group.title)
+            result.append(f'<div class="gallery-group">\n<h2 id="{slug(title)}">{title}</h2>\n')
             for box in group.generators:
                 name = box.__name__
                 fn = f"samples/{name}-thumb.jpg"
@@ -607,13 +599,16 @@ class BServer:
                 alt = f"{_(name)}"
                 href = f"{name}{langparam}"
                 if not os.path.exists(static_filename):
-                    result.append(f"""  <span class="gallery_missing" id="search_id_{name}"><a href="{href}">{_(box.__doc__)}<br><br>{_(name)}</a></span>\n""")
+                    result.append(f"""  <span class="gallery_missing" id="search_id_{name}"><a href="{href}">{_(name)}</a></span>\n""")
                 else:
-                    result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><img alt="{alt}" src="{thumbnail}"><br>{_(name)}</a></span>\n""")
+                    result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><span class="img-wrap"><img alt="{alt}" src="{thumbnail}"></span><span class="gallery-name">{_(name)}</span></a></span>\n""")
+            result.append('</div>\n')
 
-        result.append(f"""
-</div><div style="width: 5%; float: left;"></div>
-        <div class="clear"></div><hr></div>
+        result.append("""
+</div>
+</div>
+<hr>
+</div>
 </body>
 </html>
 """
@@ -654,9 +649,7 @@ class BServer:
             start_response(status, headers)
 
             lang_name = lang.info().get('language', None)
-            if lang_name not in self._cache:
-                self._cache[lang_name] = list(self.genPageMenu(lang))
-            return self._cache[lang_name]
+            return self.serveGallery(environ, start_response, lang)
 
         box = box_cls()
 
