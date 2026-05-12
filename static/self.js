@@ -104,6 +104,8 @@ function initArgsPage(num_hide = null) {
     refreshPreview();
     const chk = document.getElementById("preview_chk");
     if (chk) chk.addEventListener("change", togglePreview);
+    const form = document.getElementById("arguments");
+    if (form) form.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
 }
 
 /*** Preview ****************************************/
@@ -111,7 +113,9 @@ function initArgsPage(num_hide = null) {
 preview_scale = 100;
 
 function updatePreviewScale() {
-    document.getElementById("preview_img").style.width = preview_scale + "%";
+    const img = document.getElementById("preview_img");
+    img.style.width = preview_scale + "%";
+    img.style.maxHeight = "none";
     const label = document.getElementById("preview_scale_label");
     if (label) label.textContent = Math.round(preview_scale) + "%";
 }
@@ -122,8 +126,12 @@ function previewZoom(factor) {
 }
 
 function previewFit() {
+    const img = document.getElementById("preview_img");
+    img.style.width = "";
+    img.style.maxHeight = "";
     preview_scale = 100;
-    updatePreviewScale();
+    const label = document.getElementById("preview_scale_label");
+    if (label) label.textContent = "Fit";
 }
 
 function refreshPreview() {
@@ -512,6 +520,22 @@ function showAll(str) {
     for (let id of matching_ids) {
         id.style.display = "inline-block";
     }
+    for (let group of document.querySelectorAll('.gallery-group')) {
+        group.style.display = "";
+    }
+    getNoResultsEl().style.display = "none";
+}
+
+function getNoResultsEl() {
+    let el = document.getElementById("gallery-no-results");
+    if (!el) {
+        el = document.createElement("p");
+        el.id = "gallery-no-results";
+        el.textContent = "No results found.";
+        el.style.display = "none";
+        document.querySelector(".gallery-col").appendChild(el);
+    }
+    return el;
 }
 
 function showOnly(str) {
@@ -523,8 +547,15 @@ function showOnly(str) {
             id.style.display = "inline-block";
         } else {
             id.style.display = "none";
-	}
+        }
     }
+    let anyVisible = false;
+    for (let group of document.querySelectorAll('.gallery-group')) {
+        const visible = group.querySelectorAll('[id^="search_id_"]:not([style*="display: none"])');
+        group.style.display = visible.length > 0 ? "" : "none";
+        if (visible.length > 0) anyVisible = true;
+    }
+    getNoResultsEl().style.display = anyVisible ? "none" : "";
 }
 
 function filterSearchItems() {

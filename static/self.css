@@ -49,6 +49,7 @@ h3 {
     padding: 5px;
     padding-left: 15px;
     margin: 0px;
+    color: #4A1A05;
 }
 
 h3::before {
@@ -141,9 +142,10 @@ table tr p {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    align-items: flex-start;
 }
 
-.field-control input,
+.field-control input:not([type="checkbox"]):not([type="hidden"]),
 .field-control select {
     width: 100%;
     padding: 6px 8px;
@@ -172,7 +174,7 @@ table tr p {
     grid-column: 1 / -1;
 }
 
-.field-control input:focus,
+.field-control input:not([type="checkbox"]):not([type="hidden"]):focus,
 .field-control select:focus,
 .field-control textarea:focus {
     outline: none;
@@ -366,12 +368,17 @@ table tr p {
 
 #preview_figure {
     margin: 0;
-    width: max-content;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 #preview_img {
     display: block;
-    width: 100%;
+    max-width: 100%;
+    max-height: calc(300px - 40px);
+    width: auto;
+    height: auto;
 }
 
 #preview:fullscreen {
@@ -384,6 +391,13 @@ table tr p {
     flex: 1;
     max-height: none;
     overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#preview:fullscreen #preview_img {
+    max-height: calc(100vh - 60px);
 }
 
 hr {
@@ -443,23 +457,38 @@ video {
 
 .topbar ul li.brand a {
     font-family: 'Bungee Shade', cursive;
-    font-size: 1.4em;
-    color: #333;
+    font-size: 2.8em;
+    color: #4A1A05;
     letter-spacing: 0.03em;
 }
 
 .topbar ul li.right {
-    margin-left: auto;
     margin-right: 10px;
 }
 
-.topbar ul li.right ~ li.right {
-    margin-left: 0;
+.gallery-search {
+    margin-bottom: 16px;
+}
+
+.gallery-search input[type="search"] {
+    padding: 6px 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 280px;
 }
 
 .topbar ul li a {
     color: #555;
-    margin-right: 10px;
+    margin-right: 18px;
+}
+
+.topbar ul li:not(.brand) a:hover {
+    text-decoration: underline;
+}
+
+.topbar ul li:not(.brand) {
+    margin-left: 8px;
 }
 
 .linkbar {

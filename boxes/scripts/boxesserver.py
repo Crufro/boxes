@@ -263,7 +263,7 @@ class BServer:
   <div id="preview_toolbar">
     <div id="preview_controls">
       <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
-      <span id="preview_scale_label">100%</span>
+      <span id="preview_scale_label">Fit</span>
       <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
       <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
       <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Fullscreen')}">&#x26F6;</button>
@@ -442,7 +442,6 @@ class BServer:
 <ul>
   <li class="brand"><a href="./{langparam}">{_("Boxes.py")}</a></li>
 {self.genLinks(lang)}
-  <li class="right">\U0001f50d <input autocomplete="off" type="search" oninput="filterSearchItems();" name="search" id="search" placeholder="Search"></li>
 </ul>
 </div>
 <hr>
@@ -581,10 +580,11 @@ class BServer:
 </div>
 <div class="gallery-col">
 <p class="gallery-intro">{_('''<a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}</p>
+<div class="gallery-search">\U0001f50d <input autocomplete="off" type="search" oninput="filterSearchItems();" name="search" id="search" placeholder="Search generators..."></div>
 """]
         for nr, group in enumerate(self.groups):
             title = _(group.title)
-            result.append(f'<h2 id="{slug(title)}">{title}</h2>\n')
+            result.append(f'<div class="gallery-group">\n<h2 id="{slug(title)}">{title}</h2>\n')
             for box in group.generators:
                 name = box.__name__
                 fn = f"samples/{name}-thumb.jpg"
@@ -596,6 +596,7 @@ class BServer:
                     result.append(f"""  <span class="gallery_missing" id="search_id_{name}"><a href="{href}">{_(name)}</a></span>\n""")
                 else:
                     result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><span class="img-wrap"><img alt="{alt}" src="{thumbnail}"></span><span class="gallery-name">{_(name)}</span></a></span>\n""")
+            result.append('</div>\n')
 
         result.append("""
 </div>
