@@ -107,27 +107,61 @@ function initArgsPage(num_hide = null) {
 
 /*** Preview ****************************************/
 
-preview_scale=100;
+preview_scale = 100;
+
+function updatePreviewScale() {
+    document.getElementById("preview_img").style.width = preview_scale + "%";
+    const label = document.getElementById("preview_scale_label");
+    if (label) label.textContent = Math.round(preview_scale) + "%";
+}
+
+function previewZoom(factor) {
+    preview_scale *= factor;
+    updatePreviewScale();
+}
+
+function previewFit() {
+    preview_scale = 100;
+    updatePreviewScale();
+}
 
 function refreshPreview() {
-    if (document.getElementById("preview_img").hidden)
-	return;
+    const img = document.getElementById("preview_img");
+    if (img.hidden) return;
+
+    const status = document.getElementById("preview_status");
+    if (status) status.textContent = "Loading…";
 
     const form = document.querySelector("#arguments");
     const formData = new FormData(form);
     formData.set("format", "svg");
-
     const url = form.action + "?" + new URLSearchParams(formData).toString() + "&render=4";
 
-    const preview = document.getElementById("preview_img");
-    preview.src = url;
+    img.onload = () => { if (status) status.textContent = ""; };
+    img.onerror = () => { if (status) status.textContent = "Error"; };
+    img.src = url;
 }
 
 function togglePreview() {
     document.getElementById("preview").hidden = !event.target.checked;
-    if (event.target.checked)
-	refreshPreview();
+    if (event.target.checked) refreshPreview();
 }
+
+function previewFullscreen() {
+    const el = document.getElementById("preview");
+    if (!document.fullscreenElement) {
+        el.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+document.addEventListener("fullscreenchange", () => {
+    const btn = document.getElementById("preview_fs_btn");
+    if (!btn) return;
+    btn.textContent = document.fullscreenElement ? "×" : "⛶";
+    btn.title = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen";
+});
 
 /*** GrindFinity ******************************************/
 

@@ -32,6 +32,7 @@ li a, a h1 {
 
 body {
     min-width: 996px;
+    background-color: #FFF8EA;
 }
 
 h1 {
@@ -79,7 +80,6 @@ table tr p {
 /* Container */
 
 .argumentcontainer {
-    background-color: #FFF8EA;
     margin-top: 20px;
     margin-bottom: 40px;
     float: left;
@@ -88,12 +88,9 @@ table tr p {
     padding: 10px;
     padding-bottom: 15px;
     width: 996px;
-    border-radius: 30px;
-    box-shadow: 0 0 5px 0 #333333;
 }
 
 .container {
-    background-color: #FFF8EA;
     margin-top: 20px;
     margin-bottom: 40px;
     margin-left: auto;
@@ -101,16 +98,117 @@ table tr p {
     padding: 10px;
     padding-bottom: 15px;
     width: 996px;
-    border-radius: 30px;
-    box-shadow: 0 0 5px 0 #333333;
 }
 
-#preview_buttons {
-    padding-top: 30px;
+.generator-thumb {
+    margin-bottom: 8px;
+}
+
+.generator-thumb img {
+    height: 80px;
+    width: auto;
+    border-radius: 6px;
+}
+
+#preview {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+#preview_toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0ebe0;
+    border-bottom: 1px solid #ddd;
+}
+
+#preview_controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#preview_controls button {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+#preview_controls button:hover {
+    background: #e8e0d0;
+    border-color: #aaa;
+}
+
+#preview_scale_label {
+    font-size: 12px;
+    min-width: 36px;
+    text-align: center;
+    color: #666;
+}
+
+#preview_actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#preview_actions button {
+    background: #5F584A;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+#preview_actions button:hover {
+    background: #3e3930;
+}
+
+#preview_status {
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+    margin-right: 4px;
+}
+
+#preview_viewport {
+    overflow: auto;
+    padding: 20px;
+    background: #fff;
+    max-height: 300px;
 }
 
 #preview_figure {
-    margin: 0px;
+    margin: 0;
+    width: max-content;
+}
+
+#preview_img {
+    display: block;
+    width: 100%;
+}
+
+#preview:fullscreen {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+#preview:fullscreen #preview_viewport {
+    flex: 1;
+    max-height: none;
+    overflow: auto;
 }
 
 hr {

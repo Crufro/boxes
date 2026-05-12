@@ -235,7 +235,7 @@ class BServer:
 
         result = [f"""{self.genHTMLStart(lang)}
 <head>
-    <title>{_("%s - Boxes") % _(name)}</title>
+    <title>{_("%s - Box3D") % _(name)}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
@@ -245,7 +245,7 @@ class BServer:
 
 <div class="argumentcontainer">
 <div style="float: left;">
-<a href="./{langparam}"><h1>{_("Boxes.py")}</h1></a>
+<a href="./{langparam}"><h1>{_("Box3D")}</h1></a>
 </div>
 <div style="width: 120px; float: right;">
 <img alt="self-Logo" src="{self.static_url}/boxes-logo.svg" width="120">
@@ -260,8 +260,33 @@ class BServer:
 </div>
 <hr>
 
+<div class="generator-thumb">
+<img src="{self.static_url}/samples/{box.__class__.__name__}.jpg" onerror="this.style.display='none'" alt="">
+</div>
 <h2 style="margin: 0px 0px 0px 20px;">{_(name)}</h2>
         <p>{_(box.__doc__) if box.__doc__ else ""}</p>
+<div id="preview">
+  <div id="preview_toolbar">
+    <div id="preview_controls">
+      <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
+      <span id="preview_scale_label">100%</span>
+      <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
+      <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
+      <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Fullscreen')}">&#x26F6;</button>
+    </div>
+    <div id="preview_actions">
+      <span id="preview_status"></span>
+      <button form="arguments" name="render" value="1" formtarget="_blank">{_("Generate")}</button>
+      <button form="arguments" name="render" value="2" formtarget="_self">{_("Download")}</button>
+      <button form="arguments" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
+    </div>
+  </div>
+  <div id="preview_viewport">
+    <figure id="preview_figure">
+      <img id="preview_img" src="{self.static_url}/nothing.png">
+    </figure>
+  </div>
+</div>
 <form id="arguments" action="{action}" method="GET" rel="nofollow">
         """]
         groupid = 0
@@ -296,30 +321,12 @@ class BServer:
 <hr>
 <div class="description">
 """)
-        no_img_msg = _('There is no image yet. Please donate an image of your project on <a href=&quot;https://github.com/florianfesti/boxes/issues/628&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;>GitHub</a>!')
-
         if box.description:
             result.append(
                 markdown.markdown(_(box.description), extensions=["extra"])
                 .replace('src="static/', f'src="{self.static_url}/'))
 
-        result.append(f'''<div>
-<img style="width:100%;" src="{self.static_url}/samples/{box.__class__.__name__}.jpg" onerror="this.parentElement.innerHTML = '{no_img_msg}';" alt="Picture of box.">
-</div>
-</div>
-</div>
-<div id="preview">
-  <div id="preview_buttons">
-    {_("Zoom: ")}
-    <button type="button" onclick="preview_scale/=1.2; document.getElementById('preview_img').style.width = preview_scale + '%';">-</button>
-    <button type="button" onclick="preview_scale*= 1.2; document.getElementById('preview_img').style.width = preview_scale + '%';" >+</button>
-    <button type="button" onclick="preview_scale=100; document.getElementById('preview_img').style.width = preview_scale + '%';" >{_("Reset")}</button>
-  </div>
-<div style="overflow: auto;">
-<figure id="preview_figure" style="width: max-content;">
-<img id="preview_img" style="width:100%" src="{self.static_url}/nothing.png">
-</figure>
-</div>
+        result.append('''</div>
 </div>
 </body>
 </html>
@@ -336,7 +343,7 @@ class BServer:
 
         result = [f"""{self.genHTMLStart(lang)}
 <head>
-    <title>{_("Boxes.py")}</title>
+    <title>{_("Box3D")}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
@@ -447,11 +454,10 @@ class BServer:
             langparam = "?language=" + lang_name
 
         return f"""
-<h1><a href="./{langparam}">{_("Boxes.py")}</a></h1>
+<h1><a href="./{langparam}">{_("Box3D")}</a></h1>
 <p>{_("Create boxes and more with a laser cutter!")}</p>
 <p>
-{_('''
-        <a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}
+{_('''A fork of <a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> — an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> parametric box generator written in <a href="https://www.python.org/">Python</a>. Generates SVG cut files with finger joints, flex cuts, hinges, gears, and more. This fork adds 3D preview support.''')}
 </p>
 </div>
 
@@ -582,7 +588,7 @@ class BServer:
         result = [f"""
 {self.genHTMLStart(lang)}
 <head>
-    <title>{_("Gallery")} - {_("Boxes.py")}</title>
+    <title>{_("Gallery")} - {_("Box3D")}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
