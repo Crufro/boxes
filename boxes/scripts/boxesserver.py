@@ -587,8 +587,8 @@ class BServer:
         def slug(title):
             return re.sub(r'[^a-z0-9-]', '', title.lower().replace(' ', '-'))
 
-        sidebar_items = "".join(
-            f'<li><a href="#{slug(_(g.title))}" data-section="{slug(_(g.title))}">{_(g.title)}</a></li>'
+        toc_items = "".join(
+            f'<li><a href="#{slug(_(g.title))}">{_(g.title)}</a></li>'
             for g in self.groups
         )
 
@@ -602,15 +602,17 @@ class BServer:
     {self.genHTMLJS()}
 </head>
 <body onload="initPage()">
-<div class="gallery-layout">
-<nav class="sidebar">
-  <div class="sidebar-title">Contents</div>
-  <ul>{sidebar_items}</ul>
-</nav>
-<div class="gallery-main">
 <div class="container">
 <div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
+<div class="gallery-layout">
+<div class="toc-col">
+<div class="toc-box">
+  <div class="toc-title">Contents</div>
+  <ol>{toc_items}</ol>
+</div>
+</div>
+<div class="gallery-col">
 """]
         for nr, group in enumerate(self.groups):
             title = _(group.title)
@@ -628,9 +630,9 @@ class BServer:
                     result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><img alt="{alt}" src="{thumbnail}"><br>{_(name)}</a></span>\n""")
 
         result.append("""
+</div>
+</div>
 <hr>
-</div>
-</div>
 </div>
 </div>
 </body>

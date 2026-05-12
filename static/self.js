@@ -537,29 +537,3 @@ function filterSearchItems() {
         showOnly(search.value)
     }
 }
-
-/*** Sidebar scroll-spy **************************************/
-
-(function() {
-    const sidebar = document.querySelector('.sidebar');
-    if (!sidebar) return;
-
-    const headings = document.querySelectorAll('h2[id]');
-    if (!headings.length) return;
-
-    const links = sidebar.querySelectorAll('a[data-section]');
-
-    function setActive(id) {
-        links.forEach(a => {
-            a.classList.toggle('active', a.dataset.section === id);
-        });
-    }
-
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) setActive(entry.target.id);
-        });
-    }, { rootMargin: '0px 0px -80% 0px' });
-
-    headings.forEach(h => observer.observe(h));
-})();
