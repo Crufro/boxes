@@ -98,6 +98,7 @@ function initPage(num_hide = null) {
 function initArgsPage(num_hide = null) {
     initPage(num_hide);
     window._argumentsFormParent = document.getElementById("arguments").parentNode;
+    window._formActionsParent = document.querySelector(".form-actions")?.parentNode;
     const i = document.querySelectorAll(".field-control input, .field-control select, .field-control textarea");
     window._formDefaults = {};
     for (let el of i) {
@@ -110,6 +111,7 @@ function initArgsPage(num_hide = null) {
     if (chk) chk.addEventListener("change", togglePreview);
     const form = document.getElementById("arguments");
     if (form) form.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
+    previewMaximize();
 }
 
 /*** Preview ****************************************/
@@ -174,33 +176,30 @@ function refreshPreview() {
 
 function previewFullscreen() {
     const preview = document.getElementById("preview");
-    if (preview.classList.contains("maximized")) {
-        previewMinimize();
-    } else {
-        previewMaximize();
-    }
+    const btn = document.getElementById("preview_fs_btn");
+    const isFullpage = preview.classList.toggle("fullpage");
+    document.body.style.overflow = isFullpage ? "hidden" : "";
+    if (btn) btn.setAttribute("aria-pressed", isFullpage ? "true" : "false");
 }
 
 function previewMaximize() {
     const preview = document.getElementById("preview");
     const sidebar = document.getElementById("preview_sidebar");
     const form = document.getElementById("arguments");
+    const actions = document.querySelector(".form-actions");
     if (form && sidebar) sidebar.appendChild(form);
+    if (actions && sidebar) sidebar.appendChild(actions);
     preview.classList.add("maximized", "sidebar-open");
-    document.body.style.overflow = "hidden";
     const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
     if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "true");
 }
 
-function previewMinimize() {
-    const preview = document.getElementById("preview");
-    const form = document.getElementById("arguments");
-    if (form && window._argumentsFormParent) window._argumentsFormParent.appendChild(form);
-    preview.classList.remove("maximized", "sidebar-open");
-    document.body.style.overflow = "";
-    const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
-    if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "false");
-}
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        const preview = document.getElementById("preview");
+        if (preview && preview.classList.contains("fullpage")) previewFullscreen();
+    }
+});
 
 function resetToDefaults() {
     if (!window._formDefaults) return;
@@ -224,22 +223,6 @@ function previewToggleSidebar() {
     if (btn) btn.setAttribute("aria-pressed", isOpen ? "true" : "false");
 }
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        const preview = document.getElementById("preview");
-        if (preview && preview.classList.contains("maximized")) previewMinimize();
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const preview = document.getElementById("preview");
-    if (preview) {
-        preview.addEventListener("click", (e) => {
-            if (e.target.closest("#preview_back_btn")) return;
-            if (!preview.classList.contains("maximized")) previewFullscreen();
-        });
-    }
-});
 
 /*** GrindFinity ******************************************/
 

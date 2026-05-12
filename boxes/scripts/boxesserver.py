@@ -254,15 +254,14 @@ class BServer:
 </div>
 <hr>
 
-<div class="generator-thumb">
+<!-- <div class="generator-thumb">
 <img src="{self.static_url}/samples/{box.__class__.__name__}.jpg" onerror="this.style.display='none'" alt="">
 </div>
 <h2 style="margin: 0px 0px 0px 20px;">{_(name)}</h2>
-        <p>{_(box.__doc__) if box.__doc__ else ""}</p>
+<p>{_(box.__doc__) if box.__doc__ else ""}</p> -->
 <div id="preview">
   <div id="preview_main">
     <div id="preview_toolbar">
-      <button type="button" id="preview_back_btn" onclick="previewMinimize()">&#x2190; Back</button>
       <div id="preview_controls">
         <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
         <span id="preview_scale_label">Fit</span>
@@ -271,6 +270,7 @@ class BServer:
       </div>
       <div id="preview_actions">
         <span id="preview_status"></span>
+        <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Toggle maximize')}">&#x26F6;</button>
         <button type="button" id="preview_sidebar_open_btn" onclick="previewToggleSidebar()" title="{_('Settings')}">&#x2630;</button>
       </div>
     </div>
@@ -306,14 +306,14 @@ class BServer:
 
         result.append(f"""
 <input type="hidden" name="language" id="language" value="{lang_name}">
+</form>
 <div class="form-actions">
-    <button class="btn-primary" name="render" value="1" formtarget="_blank">{_("Generate")}</button>
-    <button class="btn-secondary" name="render" value="2" formtarget="_self">{_("Download")}</button>
-    <button class="btn-secondary" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
-    <button class="btn-ghost" name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
+    <button class="btn-primary" form="arguments" name="render" value="1" formtarget="_blank">{_("Generate")}</button>
+    <button class="btn-secondary" form="arguments" name="render" value="2" formtarget="_self">{_("Download")}</button>
+    <button class="btn-secondary" form="arguments" name="render" value="0" formtarget="_self">{_("Save to URL")}</button>
+    <button class="btn-ghost" form="arguments" name="render" value="3" formtarget="_blank">{_("QR Code")}</button>
     <button class="btn-ghost" type="button" onclick="resetToDefaults()">{_("Reset")}</button>
 </div>
-</form>
 """)
         # description commented out for now
         # if box.description:
