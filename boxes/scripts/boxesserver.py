@@ -268,7 +268,6 @@ class BServer:
         <span id="preview_scale_label">Fit</span>
         <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
         <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
-        <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Fullscreen')}">&#x26F6;</button>
       </div>
       <div id="preview_actions">
         <span id="preview_status"></span>

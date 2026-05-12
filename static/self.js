@@ -184,24 +184,20 @@ function previewFullscreen() {
 function previewMaximize() {
     const preview = document.getElementById("preview");
     const sidebar = document.getElementById("preview_sidebar");
-    const btn = document.getElementById("preview_fs_btn");
     const form = document.getElementById("arguments");
     if (form && sidebar) sidebar.appendChild(form);
     preview.classList.add("maximized", "sidebar-open");
     document.body.style.overflow = "hidden";
-    if (btn) btn.title = "Exit";
     const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
     if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "true");
 }
 
 function previewMinimize() {
     const preview = document.getElementById("preview");
-    const btn = document.getElementById("preview_fs_btn");
     const form = document.getElementById("arguments");
     if (form && window._argumentsFormParent) window._argumentsFormParent.appendChild(form);
     preview.classList.remove("maximized", "sidebar-open");
     document.body.style.overflow = "";
-    if (btn) btn.title = "Open";
     const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
     if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "false");
 }
