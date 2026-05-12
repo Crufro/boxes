@@ -257,7 +257,7 @@ class BServer:
 <hr>
 <div class="linkbar">
 <ul>
-{self.genLinks(lang, True)}
+{self.genLinks(lang)}
 </ul>
 </div>
 <hr>
@@ -479,7 +479,7 @@ class BServer:
 <hr/>
 """
 
-    def genLinks(self, lang, preview=False):
+    def genLinks(self, lang):
         _ = lang.gettext
         links = [("https://florianfesti.github.io/boxes/html/usermanual.html", _("Help")),
                  ("https://hackaday.io/project/10649-boxespy", _("Home Page")),
@@ -490,9 +490,6 @@ class BServer:
         links.append(("https://florianfesti.github.io/boxes/html/give_back.html", _("Give Back")))
 
         result = [f'  <li><a href="{url}" target="_blank" rel="noopener">{txt}</a></li>\n' for url, txt in links]
-
-        if preview:
-            result.append(f'    <li class="right">{_("Preview")} <input id="preview_chk" type="checkbox" checked="checked"> </li>\n')
 
         result.append(f'  <li class="right">{self.genHTMLLanguageSelection(lang)}  </li>\n')
         return "".join(result)

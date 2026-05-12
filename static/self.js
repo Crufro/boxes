@@ -102,7 +102,6 @@ function initArgsPage(num_hide = null) {
 	el.addEventListener("change", refreshPreview);
     }
     refreshPreview();
-    document.getElementById("preview_chk").addEventListener("change", togglePreview);
 }
 
 /*** Preview ****************************************/
@@ -127,8 +126,6 @@ function previewFit() {
 
 function refreshPreview() {
     const img = document.getElementById("preview_img");
-    if (img.hidden) return;
-
     const status = document.getElementById("preview_status");
     if (status) status.textContent = "Loading…";
 
@@ -140,11 +137,6 @@ function refreshPreview() {
     img.onload = () => { if (status) status.textContent = ""; };
     img.onerror = () => { if (status) status.textContent = "Error"; };
     img.src = url;
-}
-
-function togglePreview() {
-    document.getElementById("preview").hidden = !event.target.checked;
-    if (event.target.checked) refreshPreview();
 }
 
 function previewFullscreen() {
