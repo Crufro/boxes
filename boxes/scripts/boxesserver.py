@@ -262,16 +262,17 @@ class BServer:
 <div id="preview">
   <div id="preview_main">
     <div id="preview_toolbar">
+      <button type="button" id="preview_back_btn" onclick="previewMinimize()">&#x2190; Back</button>
       <div id="preview_controls">
         <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
         <span id="preview_scale_label">Fit</span>
         <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
         <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
         <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Fullscreen')}">&#x26F6;</button>
-        <button type="button" id="preview_sidebar_btn" onclick="previewToggleSidebar()" title="{_('Settings')}" aria-pressed="false">&#x2630;</button>
       </div>
       <div id="preview_actions">
         <span id="preview_status"></span>
+        <button type="button" id="preview_sidebar_open_btn" onclick="previewToggleSidebar()" title="{_('Settings')}">&#x2630;</button>
       </div>
     </div>
     <div id="preview_viewport">
@@ -280,7 +281,11 @@ class BServer:
       </figure>
     </div>
   </div>
-  <div id="preview_sidebar"></div>
+  <div id="preview_sidebar">
+    <div id="preview_sidebar_header">
+      <span>{_(name)}</span>
+    </div>
+  </div>
 </div>
 <form id="arguments" action="{action}" method="GET" rel="nofollow">
         """]

@@ -115,13 +115,21 @@ function initArgsPage(num_hide = null) {
 /*** Preview ****************************************/
 
 preview_scale = 100;
+preview_base_width = null;
 
 function updatePreviewScale() {
     const img = document.getElementById("preview_img");
-    img.style.width = preview_scale + "%";
+    const viewport = document.getElementById("preview_viewport");
+    if (preview_base_width === null) {
+        preview_base_width = img.getBoundingClientRect().width;
+    }
+    img.style.width = (preview_base_width * preview_scale / 100) + "px";
+    img.style.height = "auto";
+    img.style.maxWidth = "none";
     img.style.maxHeight = "none";
     const label = document.getElementById("preview_scale_label");
     if (label) label.textContent = Math.round(preview_scale) + "%";
+    if (viewport) viewport.classList.add("zoomed");
 }
 
 function previewZoom(factor) {
@@ -132,10 +140,15 @@ function previewZoom(factor) {
 function previewFit() {
     const img = document.getElementById("preview_img");
     img.style.width = "";
+    img.style.height = "";
+    img.style.maxWidth = "";
     img.style.maxHeight = "";
     preview_scale = 100;
+    preview_base_width = null;
     const label = document.getElementById("preview_scale_label");
     if (label) label.textContent = "Fit";
+    const viewport = document.getElementById("preview_viewport");
+    if (viewport) viewport.classList.remove("zoomed");
 }
 
 function refreshPreview() {
@@ -148,18 +161,49 @@ function refreshPreview() {
     formData.set("format", "svg");
     const url = form.action + "?" + new URLSearchParams(formData).toString() + "&render=4";
 
-    img.onload = () => { if (status) status.textContent = ""; };
+    img.onload = () => {
+        if (status) status.textContent = "";
+        if (preview_scale !== 100) {
+            preview_base_width = null;
+            updatePreviewScale();
+        }
+    };
     img.onerror = () => { if (status) status.textContent = "Error"; };
     img.src = url;
 }
 
 function previewFullscreen() {
-    const el = document.getElementById("preview");
-    if (!document.fullscreenElement) {
-        el.requestFullscreen();
+    const preview = document.getElementById("preview");
+    if (preview.classList.contains("maximized")) {
+        previewMinimize();
     } else {
-        document.exitFullscreen();
+        previewMaximize();
     }
+}
+
+function previewMaximize() {
+    const preview = document.getElementById("preview");
+    const sidebar = document.getElementById("preview_sidebar");
+    const btn = document.getElementById("preview_fs_btn");
+    const form = document.getElementById("arguments");
+    if (form && sidebar) sidebar.appendChild(form);
+    preview.classList.add("maximized", "sidebar-open");
+    document.body.style.overflow = "hidden";
+    if (btn) btn.title = "Exit";
+    const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
+    if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "true");
+}
+
+function previewMinimize() {
+    const preview = document.getElementById("preview");
+    const btn = document.getElementById("preview_fs_btn");
+    const form = document.getElementById("arguments");
+    if (form && window._argumentsFormParent) window._argumentsFormParent.appendChild(form);
+    preview.classList.remove("maximized", "sidebar-open");
+    document.body.style.overflow = "";
+    if (btn) btn.title = "Open";
+    const sidebarBtn = document.getElementById("preview_sidebar_open_btn");
+    if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "false");
 }
 
 function resetToDefaults() {
@@ -179,30 +223,25 @@ function resetToDefaults() {
 
 function previewToggleSidebar() {
     const preview = document.getElementById("preview");
-    const btn = document.getElementById("preview_sidebar_btn");
+    const btn = document.getElementById("preview_sidebar_open_btn");
     const isOpen = preview.classList.toggle("sidebar-open");
     if (btn) btn.setAttribute("aria-pressed", isOpen ? "true" : "false");
 }
 
-document.addEventListener("fullscreenchange", () => {
-    const btn = document.getElementById("preview_fs_btn");
-    const sidebar = document.getElementById("preview_sidebar");
-    const preview = document.getElementById("preview");
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        const preview = document.getElementById("preview");
+        if (preview && preview.classList.contains("maximized")) previewMinimize();
+    }
+});
 
-    if (document.fullscreenElement) {
-        if (btn) btn.title = "Exit fullscreen";
-        const form = document.getElementById("arguments");
-        if (form && sidebar) sidebar.appendChild(form);
-        if (preview) preview.classList.add("sidebar-open");
-        const sidebarBtn = document.getElementById("preview_sidebar_btn");
-        if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "true");
-    } else {
-        if (btn) btn.title = "Fullscreen";
-        const form = document.getElementById("arguments");
-        if (form && window._argumentsFormParent) window._argumentsFormParent.appendChild(form);
-        if (preview) preview.classList.remove("sidebar-open");
-        const sidebarBtn = document.getElementById("preview_sidebar_btn");
-        if (sidebarBtn) sidebarBtn.setAttribute("aria-pressed", "false");
+document.addEventListener("DOMContentLoaded", () => {
+    const preview = document.getElementById("preview");
+    if (preview) {
+        preview.addEventListener("click", (e) => {
+            if (e.target.closest("#preview_back_btn")) return;
+            if (!preview.classList.contains("maximized")) previewFullscreen();
+        });
     }
 });
 

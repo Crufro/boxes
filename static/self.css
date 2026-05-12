@@ -206,6 +206,9 @@ table tr p {
 .btn-primary,
 .btn-secondary,
 .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     border-radius: 5px;
     padding: 8px 18px;
@@ -295,6 +298,37 @@ table tr p {
     margin-top: 20px;
 }
 
+#preview:not(.maximized) {
+    position: relative;
+    cursor: pointer;
+}
+
+#preview:not(.maximized)::after {
+    content: "Open generator";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    color: transparent;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+#preview:not(.maximized):hover::after {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+#preview:not(.maximized) #preview_controls button,
+#preview:not(.maximized) #preview_scale_label,
+#preview:not(.maximized) #preview_sidebar_open_btn {
+    display: none;
+}
+
 #preview_toolbar {
     display: flex;
     align-items: center;
@@ -302,6 +336,9 @@ table tr p {
     padding: 8px 12px;
     background: #f0ebe0;
     border-bottom: 1px solid #ddd;
+    height: 37px;
+    box-sizing: border-box;
+    line-height: 1;
 }
 
 #preview_controls {
@@ -311,13 +348,16 @@ table tr p {
 }
 
 #preview_controls button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 3px 10px;
     cursor: pointer;
     font-size: 15px;
-    line-height: 1.4;
+    line-height: 1;
 }
 
 #preview_controls button:hover {
@@ -339,6 +379,9 @@ table tr p {
 }
 
 #preview_actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #5F584A;
     color: #fff;
     border: none;
@@ -346,6 +389,7 @@ table tr p {
     padding: 4px 12px;
     cursor: pointer;
     font-size: 13px;
+    line-height: 1;
 }
 
 #preview_actions button:hover {
@@ -381,21 +425,27 @@ table tr p {
     height: auto;
 }
 
-#preview:fullscreen {
+#preview.maximized {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
     display: flex;
     flex-direction: row;
     background: #fff;
     overflow: hidden;
+    border-radius: 0;
+    border: none;
+    margin: 0;
 }
 
-#preview:fullscreen #preview_main {
+#preview.maximized #preview_main {
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
 }
 
-#preview:fullscreen #preview_viewport {
+#preview.maximized #preview_viewport {
     flex: 1;
     max-height: none;
     overflow: auto;
@@ -404,28 +454,87 @@ table tr p {
     justify-content: center;
 }
 
-#preview:fullscreen #preview_img {
+#preview.maximized #preview_img {
     max-height: calc(100vh - 60px);
 }
 
-#preview_sidebar_btn {
-    display: none;
-    background: transparent !important;
-    border-color: transparent !important;
-    opacity: 0.5;
+#preview.maximized #preview_viewport.zoomed {
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
-#preview_sidebar_btn:hover {
+#preview_viewport.zoomed #preview_figure {
+    width: max-content;
+    min-width: 100%;
+    justify-content: flex-start;
+}
+
+#preview_viewport.zoomed #preview_img {
+    max-width: none;
+    max-height: none;
+}
+
+#preview.maximized #preview_viewport.zoomed {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#preview.maximized #preview_viewport.zoomed #preview_img {
+    max-height: none;
+    max-width: none;
+}
+
+#preview_sidebar_open_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    border-color: transparent !important;
+    color: #000 !important;
+    opacity: 0.85;
+}
+
+#preview_sidebar_open_btn:hover {
     opacity: 1;
     background: #e8e0d0 !important;
     border-color: transparent !important;
 }
 
-#preview:fullscreen #preview_sidebar_btn {
+#preview_sidebar_open_btn,
+#preview_back_btn {
+    display: none;
+}
+
+#preview.maximized #preview_sidebar_open_btn {
     display: inline-flex;
 }
 
-#preview:fullscreen #preview_sidebar {
+#preview.maximized #preview_back_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: #5F584A;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#preview.maximized #preview_back_btn:hover {
+    background: #3e3930;
+}
+
+#preview:not(.maximized) #preview_sidebar {
+    display: none;
+}
+
+#preview.maximized #preview_sidebar {
     flex-shrink: 0;
     width: 360px;
     margin-right: -360px;
@@ -437,16 +546,33 @@ table tr p {
     flex-direction: column;
 }
 
-#preview:fullscreen.sidebar-open #preview_sidebar {
+#preview.maximized.sidebar-open #preview_sidebar {
     margin-right: 0;
 }
 
-#preview:fullscreen #preview_sidebar #arguments {
+#preview.maximized #preview_sidebar_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0ebe0;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    height: 37px;
+    box-sizing: border-box;
+    line-height: 1;
+}
+
+#preview.maximized #preview_sidebar #arguments {
     padding: 12px;
     flex: 1;
 }
 
-#preview:fullscreen #preview_sidebar .form-actions {
+#preview.maximized #preview_sidebar .form-actions {
     padding: 12px;
     border-top: 1px solid #e0d8cc;
     background: #FFF8EA;
