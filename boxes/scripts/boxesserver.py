@@ -237,7 +237,7 @@ class BServer:
 
         result = [f"""{self.genHTMLStart(lang)}
 <head>
-    <title>{_("%s - Box3D") % _(name)}</title>
+    <title>{_("%s - Boxes.py") % _(name)}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
@@ -247,7 +247,7 @@ class BServer:
 
 <div class="argumentcontainer">
 <div style="float: left;">
-<a href="./{langparam}"><h1>{_("Box3D")}</h1></a>
+<a href="./{langparam}"><h1>{_("Boxes.py")}</h1></a>
 </div>
 <div style="width: 120px; float: right;">
 <img alt="self-Logo" src="{self.static_url}/boxes-logo.svg" width="120">
@@ -344,7 +344,7 @@ class BServer:
 
         result = [f"""{self.genHTMLStart(lang)}
 <head>
-    <title>{_("Box3D")}</title>
+    <title>{_("Boxes.py")}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
@@ -455,10 +455,11 @@ class BServer:
             langparam = "?language=" + lang_name
 
         return f"""
-<h1><a href="./{langparam}">{_("Box3D")}</a></h1>
+<h1><a href="./{langparam}">{_("Boxes.py")}</a></h1>
 <p>{_("Create boxes and more with a laser cutter!")}</p>
 <p>
-{_('''A fork of <a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> — an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> parametric box generator written in <a href="https://www.python.org/">Python</a>. Generates SVG cut files with finger joints, flex cuts, hinges, gears, and more. This fork adds 3D preview support.''')}
+{_('''
+        <a href="https://hackaday.io/project/10649-boxespy">Boxes.py</a> is an <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">Open Source</a> box generator written in <a href="https://www.python.org/">Python</a>. It features both finished parametrized generators as well as a Python API for writing your own. It features finger and (flat) dovetail joints, flex cuts, holes and slots for screws, hinges, gears, pulleys and much more.''')}
 </p>
 </div>
 
@@ -586,7 +587,7 @@ class BServer:
         result = [f"""
 {self.genHTMLStart(lang)}
 <head>
-    <title>{_("Gallery")} - {_("Box3D")}</title>
+    <title>{_("Gallery")} - {_("Boxes.py")}</title>
     {self.genHTMLMeta()}
 {self.genHTMLMetaLanguageLink()}
     {self.genHTMLCSS()}
@@ -596,10 +597,6 @@ class BServer:
 <div class="container">
 <div style="width: 75%; float: left;">
 {self.genPagePartHeader(lang)}
-<div class="modenav">
-<span class="modebutton modeactive">{_("Gallery")}</span>
-<span class="modebutton"><a href="Menu">{_("Menu")}</a></span>
-</div>
 """]
         for nr, group in enumerate(self.groups):
             result.append(f"<h2>{_(group.title)}</h2>\n")
@@ -611,13 +608,13 @@ class BServer:
                 alt = f"{_(name)}"
                 href = f"{name}{langparam}"
                 if not os.path.exists(static_filename):
-                    result.append(f"""  <span class="gallery_missing" id="search_id_{name}"><a href="{href}">{_(box.__doc__)}<br><br>{_(name)}</a></span>\n""")
+                    result.append(f"""  <span class="gallery_missing" id="search_id_{name}"><a href="{href}">{_(name)}</a></span>\n""")
                 else:
                     result.append(f"""  <span class="gallery" id="search_id_{name}"><a title="{_(name)} - {html.escape(_(box.__doc__))}" href="{href}"><img alt="{alt}" src="{thumbnail}"><br>{_(name)}</a></span>\n""")
 
-        result.append(f"""
-</div><div style="width: 5%; float: left;"></div>
-        <div class="clear"></div><hr></div>
+        result.append("""
+<hr>
+</div>
 </body>
 </html>
 """
@@ -658,9 +655,7 @@ class BServer:
             start_response(status, headers)
 
             lang_name = lang.info().get('language', None)
-            if lang_name not in self._cache:
-                self._cache[lang_name] = list(self.genPageMenu(lang))
-            return self._cache[lang_name]
+            return self.serveGallery(environ, start_response, lang)
 
         box = box_cls()
 

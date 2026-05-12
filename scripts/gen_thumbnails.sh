@@ -3,12 +3,15 @@
 set -e
 cd -- "$( dirname -- "${BASH_SOURCE[0]}" )"
 STATIC_DIR=../static/samples/
-THUMB_WIDTH=200
-THUMB_HEIGHT=10000 # height: auto;
+THUMB_SIZE=200
 
 thumbnail() {
-	echo "convert \"$1\" -thumbnail ${THUMB_WIDTH}x${THUMB_HEIGHT} \"${1%.*}-thumb.jpg\""
-	magick "$1" -thumbnail ${THUMB_WIDTH}x${THUMB_HEIGHT} "${1%.*}-thumb.jpg"
+	echo "convert \"$1\" -> blurred backdrop composite \"${1%.*}-thumb.jpg\""
+	magick "$1" \
+		\( -clone 0 -thumbnail ${THUMB_SIZE}x${THUMB_SIZE}^ -gravity center -crop ${THUMB_SIZE}x${THUMB_SIZE}+0+0 +repage -blur 0x12 \) \
+		\( -clone 0 -thumbnail ${THUMB_SIZE}x${THUMB_SIZE} \) \
+		-delete 0 \
+		-gravity center -composite "${1%.*}-thumb.jpg"
 	git add "$1" "${1%.*}-thumb.jpg" "$STATIC_DIR"samples.sha256
 }
 

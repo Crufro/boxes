@@ -31,7 +31,6 @@ li a, a h1 {
 
 
 body {
-    min-width: 996px;
     background-color: #FFF8EA;
 }
 
@@ -50,7 +49,6 @@ h3 {
     padding: 5px;
     padding-left: 15px;
     margin: 0px;
-    width: 75%
 }
 
 h3::before {
@@ -119,7 +117,7 @@ table tr p {
 
 .settings-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 14px 24px;
     padding: 16px;
     background: #fff;
@@ -244,25 +242,37 @@ table tr p {
 
 /* Container */
 
-.argumentcontainer {
-    margin-top: 20px;
-    margin-bottom: 40px;
-    float: left;
-    margin-left: 40px;
-    margin-right: 20px;
-    padding: 10px;
-    padding-bottom: 15px;
-    width: 996px;
+.argumentcontainer,
+.container {
+    max-width: 1400px;
+    width: calc(100% - 48px);
+    margin: 20px auto 40px;
+    padding: 0 24px 24px;
+    box-sizing: border-box;
 }
 
-.container {
-    margin-top: 20px;
-    margin-bottom: 40px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 10px;
-    padding-bottom: 15px;
-    width: 996px;
+/* Page header */
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 4px;
+}
+
+.page-header h1 {
+    margin: 0;
+}
+
+.site-logo {
+    height: 70px;
+    width: auto;
+}
+
+.tagline {
+    margin: 0 0 4px;
+    font-size: 1.05em;
+    color: #555;
 }
 
 .generator-thumb {
@@ -437,8 +447,11 @@ video {
 
 img[id|=sample] {
     position: fixed;
-    bottom: 100px;
-    right: calc(50% - 498px);
+    bottom: 24px;
+    right: 24px;
+    max-width: 220px;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
 
 .menu ul {
@@ -491,29 +504,17 @@ textarea {
 }
 
 .gallery img {
-    max-height : 200px;
-    max-width : 200px;
-    margin : 5px;
+    width : 200px;
+    height : 200px;
+    object-fit : contain;
+    background : white;
 }
 
-.modenav {
-    overflow: hidden;
-}
-
-.modebutton {
-    float: left;
-    border: none;
-    outline: none;
-    padding: 10px 16px;
-    margin-right: 10px;
-    text-align : center;
-    border-radius: 10px;
-    font-size: 17px;
-    width: 25%;
-    background-color: #EFE8DA;
-}
-
-.modeactive {
-    background-color: #DFD8BA;
-
+.gallery_missing::before {
+    content : '';
+    display : block;
+    width : 200px;
+    height : 200px;
+    background : #3b2417;
+    margin : 0 auto;
 }

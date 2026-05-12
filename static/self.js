@@ -99,9 +99,11 @@ function initArgsPage(num_hide = null) {
     initPage(num_hide);
     const i = document.querySelectorAll(".field-control input, .field-control select, .field-control textarea");
     for (let el of i) {
-	el.addEventListener("change", refreshPreview);
+        el.addEventListener("change", refreshPreview);
     }
     refreshPreview();
+    const chk = document.getElementById("preview_chk");
+    if (chk) chk.addEventListener("change", togglePreview);
 }
 
 /*** Preview ****************************************/
