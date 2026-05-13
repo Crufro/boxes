@@ -395,6 +395,12 @@ table tr p {
     justify-content: flex-start;
 }
 
+#preview_viewport.panning,
+#preview_viewport.panning * {
+    cursor: grabbing !important;
+    user-select: none;
+}
+
 #preview_viewport.zoomed::-webkit-scrollbar,
 #preview.maximized #preview_sidebar #arguments::-webkit-scrollbar {
     width: 12px;

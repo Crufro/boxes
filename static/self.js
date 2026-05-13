@@ -112,6 +112,7 @@ function initArgsPage(num_hide = null) {
     const form = document.getElementById("arguments");
     if (form) form.addEventListener("keydown", e => { if (e.key === "Enter") e.preventDefault(); });
     previewMaximize();
+    initPreviewInteractions();
 }
 
 /*** Preview ****************************************/
@@ -134,9 +135,81 @@ function updatePreviewScale() {
     if (viewport) viewport.classList.add("zoomed");
 }
 
-function previewZoom(factor) {
-    preview_scale *= factor;
+function previewZoom(factor, centerClientX, centerClientY) {
+    const viewport = document.getElementById("preview_viewport");
+    const img = document.getElementById("preview_img");
+    if (img && preview_base_width === null) {
+        preview_base_width = img.getBoundingClientRect().width;
+    }
+    const oldScale = preview_scale;
+    preview_scale = Math.max(10, Math.min(2000, preview_scale * factor));
     updatePreviewScale();
+    if (viewport && centerClientX !== undefined && centerClientY !== undefined) {
+        const rect = viewport.getBoundingClientRect();
+        const mx = centerClientX - rect.left;
+        const my = centerClientY - rect.top;
+        const ratio = preview_scale / oldScale;
+        viewport.scrollLeft = (viewport.scrollLeft + mx) * ratio - mx;
+        viewport.scrollTop = (viewport.scrollTop + my) * ratio - my;
+    }
+}
+
+function initPreviewInteractions() {
+    const viewport = document.getElementById("preview_viewport");
+    if (!viewport || viewport._interactionsInit) return;
+    viewport._interactionsInit = true;
+
+    viewport.addEventListener("wheel", (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+        previewZoom(factor, e.clientX, e.clientY);
+    }, { passive: false });
+
+    let isPanning = false;
+    let panStartX = 0, panStartY = 0;
+    let scrollStartX = 0, scrollStartY = 0;
+    let suppressNextContextMenu = false;
+
+    viewport.addEventListener("mousedown", (e) => {
+        const isMiddle = e.button === 1;
+        const isCtrlLeft = e.button === 0 && (e.ctrlKey || e.metaKey);
+        if (!isMiddle && !isCtrlLeft) return;
+        e.preventDefault();
+        isPanning = true;
+        if (isCtrlLeft) suppressNextContextMenu = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        scrollStartX = viewport.scrollLeft;
+        scrollStartY = viewport.scrollTop;
+        viewport.classList.add("panning");
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (!isPanning) return;
+        e.preventDefault();
+        viewport.scrollLeft = scrollStartX - (e.clientX - panStartX);
+        viewport.scrollTop = scrollStartY - (e.clientY - panStartY);
+    });
+
+    const endPan = () => {
+        if (!isPanning) return;
+        isPanning = false;
+        viewport.classList.remove("panning");
+    };
+    document.addEventListener("mouseup", endPan);
+    document.addEventListener("mouseleave", endPan);
+
+    viewport.addEventListener("contextmenu", (e) => {
+        if (suppressNextContextMenu) {
+            e.preventDefault();
+            suppressNextContextMenu = false;
+        }
+    });
+
+    viewport.addEventListener("auxclick", (e) => {
+        if (e.button === 1) e.preventDefault();
+    });
 }
 
 function previewFit() {
