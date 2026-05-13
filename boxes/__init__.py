@@ -2525,16 +2525,7 @@ class Boxes:
         if len(edges) != 4:
             raise ValueError("four edges required")
         edges = [self.edges.get(e, e) for e in edges]
-        wall_spec = None
-        if self.supports_3d_preview:
-            wall_spec = {
-                "x": x,
-                "y": y,
-                "edges": "".join(getattr(e, "char", "e") for e in edges[:4]),
-                "thickness": self.thickness,
-                "label": label or f"wall_{len(self._wall_specs)}",
-            }
-            self._wall_specs.append(wall_spec)
+        wall_spec = self._record_wall_spec(x, y, edges, label)
         edges += edges  # append for wrapping around
         overallwidth = x + edges[-1].spacing() + edges[1].spacing()
         overallheight = y + edges[0].spacing() + edges[2].spacing()
@@ -2568,23 +2559,85 @@ class Boxes:
             self.hexHolesRectangle(x - 2 * holesMargin, y - 2 * holesMargin, settings=holesSettings)
 
         if wall_spec is not None:
+            self._capture_wall_polygon(wall_spec)
+
+        self.move(overallwidth, overallheight, move, label=label)
+
+    def _record_wall_spec(self, x, y, edges, label):
+        """Begin recording a wall for 3D preview. Returns the spec dict (or None
+        if 3D preview is disabled for this generator). Caller is expected to
+        invoke `_capture_wall_polygon(spec)` once edges have been drawn.
+
+        While the spec is active, ctx.line_to/curve_to are wrapped to record
+        outline points in the wall's *local* coordinate frame. Recording is
+        paused while a `cc()` callback runs so per-side decorations (holes,
+        finger-hole stripes, etc.) don't pollute the outline."""
+        if not self.supports_3d_preview:
+            return None
+        spec = {
+            "x": x,
+            "y": y,
+            "edges": "".join(getattr(e, "char", "e") for e in edges[:4]),
+            "thickness": self.thickness,
+            "label": label or f"wall_{len(self._wall_specs)}",
+        }
+        self._wall_specs.append(spec)
+
+        ctx = self.ctx
+        recorder = {
+            "pts": [],
+            "paused": 0,
+            "wall_m": ctx._m,
+            "orig_line_to": ctx.line_to,
+            "orig_curve_to": ctx.curve_to,
+            "orig_cc": self.cc,
+        }
+
+        def _push_point(xy):
+            # Record in the wall's local frame regardless of any sub-transforms
+            # applied by the edge implementation.
             try:
-                m_inv = ~self.ctx._m
-                pts = []
-                for cmd in self.ctx._dwg._p.path:
-                    op = cmd[0]
-                    if op in ("M", "L"):
-                        lx, ly = m_inv * (cmd[1], cmd[2])
-                        pts.append([round(lx, 4), round(ly, 4)])
-                    elif op == "C":
-                        # destination is at [1:3]; control points at [3:5], [5:7]
-                        lx, ly = m_inv * (cmd[1], cmd[2])
-                        pts.append([round(lx, 4), round(ly, 4)])
-                wall_spec["polygon"] = pts
+                local = (~recorder["wall_m"]) * (ctx._m * xy)
+                recorder["pts"].append([round(local[0], 4), round(local[1], 4)])
             except Exception:
                 pass
 
-        self.move(overallwidth, overallheight, move, label=label)
+        def line_to_wrap(x, y):
+            if recorder["paused"] == 0:
+                _push_point((x, y))
+            return recorder["orig_line_to"](x, y)
+
+        def curve_to_wrap(x1, y1, x2, y2, x3, y3):
+            if recorder["paused"] == 0:
+                _push_point((x3, y3))
+            return recorder["orig_curve_to"](x1, y1, x2, y2, x3, y3)
+
+        def cc_wrap(callback, number, x=0.0, y=None, a=0.0):
+            recorder["paused"] += 1
+            try:
+                return recorder["orig_cc"](callback, number, x=x, y=y, a=a)
+            finally:
+                recorder["paused"] -= 1
+
+        ctx.line_to = line_to_wrap
+        ctx.curve_to = curve_to_wrap
+        self.cc = cc_wrap
+        self._wall_recorder = recorder
+        return spec
+
+    def _capture_wall_polygon(self, spec):
+        """Finalize wall recording: detach the line_to/curve_to wrappers and
+        write the captured polygon onto the spec."""
+        rec = getattr(self, "_wall_recorder", None)
+        if rec is None or spec is None:
+            return
+        try:
+            self.ctx.line_to = rec["orig_line_to"]
+            self.ctx.curve_to = rec["orig_curve_to"]
+            self.cc = rec["orig_cc"]
+            spec["polygon"] = rec["pts"]
+        finally:
+            self._wall_recorder = None
 
     def flangedWall(self, x, y, edges="FFFF", flanges=None, r=0.0,
                callback=None, move=None, label=""):
@@ -2613,6 +2666,7 @@ class Boxes:
             flanges.append(0.0)
 
         edges = [self.edges.get(e, e) for e in edges]
+        wall_spec = self._record_wall_spec(x, y, edges, label)
         # double to allow looping around
         edges = edges + edges
         flanges = flanges + flanges
@@ -2642,6 +2696,8 @@ class Boxes:
                 edges[i](l)
                 self.edge(flanges[i+1]+edges[i+1].startWidth()-rr)
             self.corner(90, rr)
+        if wall_spec is not None:
+            self._capture_wall_polygon(wall_spec)
         self.move(tw, th, move, label=label)
 
     def rectangularTriangle(self, x, y, edges="eee", r=0.0, num=1,

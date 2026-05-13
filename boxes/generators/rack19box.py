@@ -20,6 +20,38 @@ class Rack19Box(Boxes):
     """Closed box with screw on top for mounting in a 19" rack."""
 
     ui_group = "Box"
+    supports_3d_preview = True
+
+    def assemble3D(self):
+        t = self.thickness
+        h = self.height * 44.45 - 0.787 - t
+        # Width depends on rack type. For the 19" variant the inner width is
+        # 448 - 2t; the body's outer width is 448, and the front panel adds
+        # 17 mm flanges on each side (captured in the polygon, so the flanges
+        # extrude past the cuboid envelope naturally).
+        inner_x = 448.0 - 2 * t
+        y = self.depth
+        return {
+            "kind": "cuboid",
+            "dimensions": {
+                "x": inner_x + 2 * t,   # 448 (body width, excluding rack ears)
+                "y": y + 2 * t,
+                "z": h,                  # side-wall height; bottom+lid sit inside
+            },
+            "thickness": t,
+            "omit": [],
+            "wall_map": [
+                {"wall": 0, "face": "right"},
+                {"wall": 1, "face": "front"},
+                {"wall": 2, "face": "back"},
+                {"wall": 3, "face": "left"},
+                # Bottom polygon "fFFF": flat-ish bottom-of-polygon ('f') faces
+                # the front, but default bottom placement maps polygon Y+ → world
+                # Z+ (front). Rotate 180° to put the 'f' edge at the front.
+                {"wall": 4, "face": "bottom", "rotate": 180},
+                {"wall": 5, "face": "top"},
+            ],
+        }
 
     def __init__(self) -> None:
         Boxes.__init__(self)
