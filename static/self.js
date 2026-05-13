@@ -132,10 +132,13 @@ function setPreviewMode(mode) {
     const canvas = document.getElementById("preview_canvas_3d");
     const btn2d = document.getElementById("preview_mode_2d_btn");
     const btn3d = document.getElementById("preview_mode_3d_btn");
-    const views3d = document.getElementById("preview_views_3d");
+    const controls2d = document.getElementById("preview_controls");
+    const gizmo = document.getElementById("preview_gizmo");
     const is3d = mode === "3d";
     if (img) img.style.display = is3d ? "none" : "";
     if (canvas) canvas.style.display = is3d ? "" : "none";
+    if (controls2d) controls2d.style.display = is3d ? "none" : "";
+    if (gizmo) gizmo.style.display = is3d ? "" : "none";
     if (btn2d) {
         btn2d.classList.toggle("mode-active", !is3d);
         btn2d.setAttribute("aria-pressed", is3d ? "false" : "true");
@@ -144,7 +147,6 @@ function setPreviewMode(mode) {
         btn3d.classList.toggle("mode-active", is3d);
         btn3d.setAttribute("aria-pressed", is3d ? "true" : "false");
     }
-    if (views3d) views3d.style.display = is3d ? "" : "none";
     if (is3d) {
         if (window.preview3d) window.preview3d.show();
         refresh3D();

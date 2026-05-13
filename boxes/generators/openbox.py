@@ -37,8 +37,16 @@ class OpenBox(Boxes):
             "wall_map": [
                 {"wall": 0, "face": "back"},
                 {"wall": 1, "face": "left"},
-                {"wall": 2, "face": "right"},
-                {"wall": 3, "face": "bottom"},
+                # Both side walls share the same 2D polygon (`f` on the left edge
+                # mates with the back wall). When placed on the +X face the wall
+                # has to be mirrored so its `f` ends up at the back of the box.
+                {"wall": 2, "face": "right", "mirror_x": True},
+                # Bottom panel polygon ("efff") has its flat `e` edge at the
+                # polygon bottom (= front of box, which is open). The default
+                # bottom placement maps polygon Y+ to world Z+ (front), so we
+                # rotate 180° in-plane to swap front/back and put `e` at the
+                # open front.
+                {"wall": 3, "face": "bottom", "rotate": 180},
             ],
         }
 

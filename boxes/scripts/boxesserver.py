@@ -273,12 +273,6 @@ class BServer:
         <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
         <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
       </div>
-      <div id="preview_views_3d" style="display:none">
-        <button type="button" onclick="preview3dView('iso')" title="{_('Isometric')}">Iso</button>
-        <button type="button" onclick="preview3dView('front')" title="{_('Front')}">Front</button>
-        <button type="button" onclick="preview3dView('side')" title="{_('Side')}">Side</button>
-        <button type="button" onclick="preview3dView('top')" title="{_('Top')}">Top</button>
-      </div>
       <div id="preview_actions">
         <span id="preview_status"></span>
         <button type="button" id="preview_fs_btn" onclick="previewFullscreen()" title="{_('Toggle maximize')}">&#x26F6;</button>

@@ -50,7 +50,9 @@ See BasedBox for variant with a base."""
             "wall_map": [
                 {"wall": 0, "face": "back"},
                 {"wall": 1, "face": "left"},
-                {"wall": 2, "face": "right"},
+                # Side walls share an identical FfFf polygon; the right one
+                # has to be mirrored so its fingering matches the back wall.
+                {"wall": 2, "face": "right", "mirror_x": True},
                 {"wall": 3, "face": "front"},
                 {"wall": 4, "face": "top"},
                 {"wall": 5, "face": "bottom"},
