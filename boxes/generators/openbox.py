@@ -20,6 +20,27 @@ class OpenBox(Boxes):
     """Box with top and front open"""
 
     ui_group = "Box"
+    supports_3d_preview = True
+
+    def assemble3D(self):
+        x, y, h = self.x, self.y, self.h
+        t = self.thickness
+        if not self.outside:
+            x += 2 * t
+            y += t   # only back face contributes thickness on Y (front is open)
+            h += t   # only bottom contributes on Z (top is open)
+        return {
+            "kind": "cuboid",
+            "dimensions": {"x": x, "y": y, "z": h},
+            "thickness": t,
+            "omit": ["top", "front"],
+            "wall_map": [
+                {"wall": 0, "face": "back"},
+                {"wall": 1, "face": "left"},
+                {"wall": 2, "face": "right"},
+                {"wall": 3, "face": "bottom"},
+            ],
+        }
 
     def __init__(self) -> None:
         Boxes.__init__(self)

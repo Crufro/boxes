@@ -20,6 +20,7 @@ import gettext
 import glob
 import html
 import io
+import json
 import mimetypes
 import os.path
 import re
@@ -259,14 +260,24 @@ class BServer:
 </div>
 <h2 style="margin: 0px 0px 0px 20px;">{_(name)}</h2>
 <p>{_(box.__doc__) if box.__doc__ else ""}</p> -->
-<div id="preview">
+<div id="preview" data-supports-3d="{'true' if getattr(box, 'supports_3d_preview', False) else 'false'}">
   <div id="preview_main">
     <div id="preview_toolbar">
+      <div id="preview_modes">
+        <button type="button" id="preview_mode_2d_btn" class="mode-active" aria-pressed="true" onclick="setPreviewMode('2d')" title="{_('2D layout')}">2D</button>
+        <button type="button" id="preview_mode_3d_btn" aria-pressed="false" onclick="setPreviewMode('3d')" title="{_('3D preview')}">3D</button>
+      </div>
       <div id="preview_controls">
         <button type="button" onclick="previewZoom(1/1.2)" title="{_('Zoom out')}">&#x2212;</button>
         <span id="preview_scale_label">Fit</span>
         <button type="button" onclick="previewZoom(1.2)" title="{_('Zoom in')}">+</button>
         <button type="button" onclick="previewFit()" title="{_('Fit to width')}">{_("Fit")}</button>
+      </div>
+      <div id="preview_views_3d" style="display:none">
+        <button type="button" onclick="preview3dView('iso')" title="{_('Isometric')}">Iso</button>
+        <button type="button" onclick="preview3dView('front')" title="{_('Front')}">Front</button>
+        <button type="button" onclick="preview3dView('side')" title="{_('Side')}">Side</button>
+        <button type="button" onclick="preview3dView('top')" title="{_('Top')}">Top</button>
       </div>
       <div id="preview_actions">
         <span id="preview_status"></span>
@@ -277,6 +288,7 @@ class BServer:
     <div id="preview_viewport">
       <figure id="preview_figure">
         <img id="preview_img" src="{self.static_url}/nothing.png">
+        <canvas id="preview_canvas_3d" style="display:none"></canvas>
       </figure>
     </div>
   </div>
@@ -321,8 +333,9 @@ class BServer:
         #         markdown.markdown(_(box.description), extensions=["extra"])
         #         .replace('src="static/', f'src="{self.static_url}/'))
 
-        result.append('''
+        result.append(f'''
 </div>
+<script type="module" src="{self.static_url}/preview3d.js"></script>
 </body>
 </html>
         ''')
@@ -629,9 +642,12 @@ class BServer:
         name = environ["PATH_INFO"][1:]
         args = [unquote_plus(arg) for arg in environ.get('QUERY_STRING', '').split("&")]
         render = "0"
+        preview3d = False
         for arg in args:
             if arg.startswith("render="):
                 render = arg[len("render="):]
+            if arg == "preview3d=1":
+                preview3d = True
 
         if not self.legal_url:
             if (environ.get('HTTP_HOST', '') == "boxes.hackerspace-bamberg.de" or
@@ -665,7 +681,15 @@ class BServer:
             start_response(status, headers)
             return self.args2html_cached(name, box, lang, "./" + name, defaults=defaults)
 
-        args = ["--" + arg for arg in args if not arg.startswith("render=")]
+        if preview3d:
+            if not getattr(box, "supports_3d_preview", False):
+                start_response(status, [
+                    ('Content-type', 'application/json; charset=utf-8'),
+                    ('X-Robots-Tag', 'noindex,nofollow'),
+                ])
+                return (b'{"supports_3d": false}',)
+
+        args = ["--" + arg for arg in args if not arg.startswith("render=") and arg != "preview3d=1"]
         try:
             box.parseArgs(args)
         except ArgumentParserError as e:
@@ -682,6 +706,18 @@ class BServer:
                                                    box.non_default_args)
             box.open()
             box.render()
+            if preview3d:
+                payload = {
+                    "supports_3d": True,
+                    "topology": box.assemble3D() if hasattr(box, "assemble3D") else None,
+                    "walls": list(getattr(box, "_wall_specs", [])),
+                }
+                body = json.dumps(payload).encode("utf-8")
+                start_response(status, [
+                    ('Content-type', 'application/json; charset=utf-8'),
+                    ('X-Robots-Tag', 'noindex,nofollow'),
+                ])
+                return (body,)
             data = box.close()
         except Exception as e:
             if not isinstance(e, ValueError):

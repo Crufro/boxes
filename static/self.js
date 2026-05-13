@@ -118,6 +118,60 @@ function initArgsPage(num_hide = null) {
 
 preview_scale = 100;
 preview_base_width = null;
+previewMode = "2d";
+
+function previewSupports3D() {
+    const preview = document.getElementById("preview");
+    return preview && preview.getAttribute("data-supports-3d") === "true";
+}
+
+function setPreviewMode(mode) {
+    if (mode === "3d" && !previewSupports3D()) return;
+    previewMode = mode;
+    const img = document.getElementById("preview_img");
+    const canvas = document.getElementById("preview_canvas_3d");
+    const btn2d = document.getElementById("preview_mode_2d_btn");
+    const btn3d = document.getElementById("preview_mode_3d_btn");
+    const views3d = document.getElementById("preview_views_3d");
+    const is3d = mode === "3d";
+    if (img) img.style.display = is3d ? "none" : "";
+    if (canvas) canvas.style.display = is3d ? "" : "none";
+    if (btn2d) {
+        btn2d.classList.toggle("mode-active", !is3d);
+        btn2d.setAttribute("aria-pressed", is3d ? "false" : "true");
+    }
+    if (btn3d) {
+        btn3d.classList.toggle("mode-active", is3d);
+        btn3d.setAttribute("aria-pressed", is3d ? "true" : "false");
+    }
+    if (views3d) views3d.style.display = is3d ? "" : "none";
+    if (is3d) {
+        if (window.preview3d) window.preview3d.show();
+        refresh3D();
+    }
+}
+
+function refresh3D() {
+    if (!previewSupports3D()) return;
+    const form = document.querySelector("#arguments");
+    if (!form) return;
+    const formData = new FormData(form);
+    formData.set("format", "svg");
+    const url = form.action + "?" + new URLSearchParams(formData).toString() + "&render=4&preview3d=1";
+    console.log("[preview3d] fetching", url);
+    fetch(url, { credentials: "same-origin" })
+        .then(r => r.ok ? r.json() : null)
+        .then(payload => {
+            console.log("[preview3d] payload", payload);
+            if (!payload || !payload.supports_3d) return;
+            if (window.preview3d) {
+                window.preview3d.build(payload);
+            } else {
+                console.warn("[preview3d] window.preview3d missing — module didn't load");
+            }
+        })
+        .catch(err => { console.error("[preview3d] fetch failed", err); });
+}
 
 function updatePreviewScale() {
     const img = document.getElementById("preview_img");
@@ -172,6 +226,10 @@ function refreshPreview() {
     };
     img.onerror = () => { if (status) status.textContent = "Error"; };
     img.src = url;
+
+    if (previewMode === "3d" && previewSupports3D()) {
+        refresh3D();
+    }
 }
 
 function previewFullscreen() {

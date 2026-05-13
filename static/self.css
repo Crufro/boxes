@@ -310,11 +310,63 @@ table tr p {
     border-bottom: 1px solid #ddd;
 }
 
+#preview_modes,
+#preview_views_3d,
 #preview_controls,
 #preview_actions {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+#preview_modes button,
+#preview_views_3d button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 10px;
+    background: rgba(74, 26, 5, 0.06);
+    border: 1px solid rgba(74, 26, 5, 0.15);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    color: #4A1A05;
+}
+
+#preview_modes button:hover,
+#preview_views_3d button:hover {
+    background: rgba(74, 26, 5, 0.13);
+    border-color: rgba(74, 26, 5, 0.25);
+}
+
+#preview_modes button.mode-active {
+    background: #4A1A05;
+    color: #f7f3ea;
+    border-color: #4A1A05;
+}
+
+#preview[data-supports-3d="false"] #preview_modes {
+    display: none;
+}
+
+#preview_canvas_3d {
+    display: block;
+    width: 100%;
+    height: 360px;
+    border-radius: 4px;
+    touch-action: none;
+}
+
+#preview.maximized #preview_figure:has(#preview_canvas_3d:not([style*="display:none"])),
+#preview.maximized #preview_viewport {
+    height: 100%;
+}
+
+#preview.maximized #preview_canvas_3d {
+    height: 100%;
+    min-height: 480px;
 }
 
 #preview_controls button {

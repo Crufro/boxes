@@ -344,9 +344,15 @@ class Boxes:
 
     description: str = ""  # Markdown syntax is supported
 
+    # Opt-in flag for browser 3D preview. Generators that only emit
+    # rectangularWall() calls and provide an assemble3D() method may set
+    # this to True. See boxes/scripts/boxesserver.py for the JSON endpoint.
+    supports_3d_preview = False
+
     def __init__(self) -> None:
         self.formats = formats.Formats()
         self.ctx = None
+        self._wall_specs: list[dict] = []
         description: str = ""
         if self.__doc__:
             description = inspect.cleandoc(self.__doc__)
@@ -2519,6 +2525,16 @@ class Boxes:
         if len(edges) != 4:
             raise ValueError("four edges required")
         edges = [self.edges.get(e, e) for e in edges]
+        wall_spec = None
+        if self.supports_3d_preview:
+            wall_spec = {
+                "x": x,
+                "y": y,
+                "edges": "".join(getattr(e, "char", "e") for e in edges[:4]),
+                "thickness": self.thickness,
+                "label": label or f"wall_{len(self._wall_specs)}",
+            }
+            self._wall_specs.append(wall_spec)
         edges += edges  # append for wrapping around
         overallwidth = x + edges[-1].spacing() + edges[1].spacing()
         overallheight = y + edges[0].spacing() + edges[2].spacing()
@@ -2550,6 +2566,23 @@ class Boxes:
             self.moveTo(holesMargin,
                         holesMargin + edges[0].startWidth())
             self.hexHolesRectangle(x - 2 * holesMargin, y - 2 * holesMargin, settings=holesSettings)
+
+        if wall_spec is not None:
+            try:
+                m_inv = ~self.ctx._m
+                pts = []
+                for cmd in self.ctx._dwg._p.path:
+                    op = cmd[0]
+                    if op in ("M", "L"):
+                        lx, ly = m_inv * (cmd[1], cmd[2])
+                        pts.append([round(lx, 4), round(ly, 4)])
+                    elif op == "C":
+                        # destination is at [1:3]; control points at [3:5], [5:7]
+                        lx, ly = m_inv * (cmd[1], cmd[2])
+                        pts.append([round(lx, 4), round(ly, 4)])
+                wall_spec["polygon"] = pts
+            except Exception:
+                pass
 
         self.move(overallwidth, overallheight, move, label=label)
 

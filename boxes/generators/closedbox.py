@@ -20,6 +20,7 @@ class ClosedBox(Boxes):
     """Fully closed box"""
 
     ui_group = "Box"
+    supports_3d_preview = True
 
     description = """This box is more of a building block than a finished item.
 Use a vector graphics program (like Inkscape) to add holes or adjust the base
@@ -31,6 +32,30 @@ See BasedBox for variant with a base."""
         Boxes.__init__(self)
         self.addSettingsArgs(edges.FingerJointSettings)
         self.buildArgParser("x", "y", "h", "outside")
+
+    def assemble3D(self):
+        x, y, h = self.x, self.y, self.h
+        t = self.thickness
+        if not self.outside:
+            x += 2 * t
+            y += 2 * t
+            h += 2 * t
+        return {
+            "kind": "cuboid",
+            "dimensions": {"x": x, "y": y, "z": h},
+            "thickness": t,
+            "omit": [],
+            # Maps each captured rectangularWall() index to a face.
+            # Render order in render() below: 4 sides then top+bottom.
+            "wall_map": [
+                {"wall": 0, "face": "back"},
+                {"wall": 1, "face": "left"},
+                {"wall": 2, "face": "right"},
+                {"wall": 3, "face": "front"},
+                {"wall": 4, "face": "top"},
+                {"wall": 5, "face": "bottom"},
+            ],
+        }
 
     def render(self):
 
