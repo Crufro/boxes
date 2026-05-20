@@ -246,20 +246,22 @@ def generate(cut, output_prefix, format="svg"):
         else:
             output_file = f"{output_prefix}_{box_type}_{ii}"
 
+        extension = "zip" if format == "stl" else format
+
         # Write the output
         if box_settings.get("count") is not None:
             for jj in range(int(box_settings.get("count"))):
-                logging.info("Writing %s_%s.%s", output_file, jj, format)
-                with open(f"{output_file}_{jj}.{format}", "wb") as ff:
+                logging.info("Writing %s_%s.%s", output_file, jj, extension)
+                with open(f"{output_file}_{jj}.{extension}", "wb") as ff:
                     ff.write(data.read())
                     data.seek(0)
-                generated_files.append(f"{output_file}_{jj}.{format}")
+                generated_files.append(f"{output_file}_{jj}.{extension}")
 
         else:
-            logging.info("Writing %s.%s", output_file, format)
-            with open(f"{output_file}.{format}", "wb") as ff:
+            logging.info("Writing %s.%s", output_file, extension)
+            with open(f"{output_file}.{extension}", "wb") as ff:
                 ff.write(data.read())
-            generated_files.append(f"{output_file}.{format}")
+            generated_files.append(f"{output_file}.{extension}")
 
     return generated_files
 

@@ -470,7 +470,7 @@ class Boxes:
         self.spacing = 2 * self.burn + self.spacing[0] * self.thickness + self.spacing[1]
         self.set_font("sans-serif")
         self._buildObjects()
-        if self.reference and self.format != 'svg_Ponoko':
+        if self.reference and self.format not in ('svg_Ponoko', 'stl'):
             self.move(self.reference, 10, "up", before=True)
             self.ctx.rectangle(0, 0, self.reference, 10)
             if self.reference < 80:
@@ -637,7 +637,8 @@ class Boxes:
         # Change file ending to format if not given explicitly
         fileFormat = getattr(self, "format", "svg")
         if getattr(self, 'output', None) == 'box.svg':
-            self.output = 'box.' + fileFormat.split("_")[0]
+            extension = "zip" if fileFormat == "stl" else fileFormat.split("_")[0]
+            self.output = 'box.' + extension
 
         self.metadata["cli_short"] = "boxes " + self.__class__.__name__ + " " + " ".join(cliQuote(arg) for arg in args if (arg.split("=")[0][2:] in self.non_default_args))
         self.metadata["cli_short"] = self.metadata["cli_short"].strip()
@@ -824,6 +825,8 @@ class Boxes:
         self.ctx = None
 
         self.surface.set_metadata(self.metadata)
+        if hasattr(self.surface, "set_thickness"):
+            self.surface.set_thickness(self.thickness)
 
         self.surface.flush()
         data = self.surface.finish(self.inner_corners)
@@ -1282,6 +1285,8 @@ class Boxes:
 
         if not before:
             # restore position
+            if label:
+                self.ctx.set_part_name(label)
             self.ctx.stroke()
             self.ctx.restore()
             if self.labels and label:
@@ -1315,7 +1320,7 @@ class Boxes:
                     self.moveTo(0, y)
                     self.ctx.scale(1, -1)
                 self.moveTo(self.spacing / 2.0, self.spacing / 2.0)
-        self.ctx.new_part()
+        self.ctx.new_part(label if before and label else "part")
 
         return dontdraw
 

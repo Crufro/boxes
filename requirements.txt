@@ -1,5 +1,6 @@
 affine>=2.0
 markdown
+mapbox_earcut
 numpy
 pillow
 PyYAML

@@ -20,6 +20,7 @@ import subprocess
 import tempfile
 import io
 from boxes.drawing import Context, LBRN2Surface, PSSurface, SVGSurface
+from boxes.stl import STLSurface
 
 
 class Formats:
@@ -27,13 +28,14 @@ class Formats:
     pstoedit_candidates = ["/usr/bin/pstoedit", "pstoedit", r"C:\Program Files\pstoedit\pstoedit.exe", "pstoedit.exe"]
     ps2pdf_candidates = ["/usr/bin/ps2pdf", "ps2pdf", "ps2pdf.exe"]
 
-    _BASE_FORMATS = ['svg', 'svg_Ponoko', 'ps', 'lbrn2']
+    _BASE_FORMATS = ['svg', 'svg_Ponoko', 'ps', 'lbrn2', 'stl']
 
     formats = {
         "svg": None,
         "svg_Ponoko": None,
         "ps": None,
         "lbrn2": None,
+        "stl": None,
         "dxf": "{pstoedit} -flat 0.1 -f dxf:-mm {input} {output}",
         "gcode": "{pstoedit} -f gcode {input} {output}",
         "plt": "{pstoedit} -f hpgl {input} {output}",
@@ -46,6 +48,7 @@ class Formats:
         "svg_Ponoko": [('Content-type', 'image/svg+xml; charset=utf-8')],
         "ps": [('Content-type', 'application/postscript')],
         "lbrn2": [('Content-type', 'application/lbrn2')],
+        "stl": [('Content-type', 'application/zip')],
         "dxf": [('Content-type', 'image/vnd.dxf')],
         "plt": [('Content-type', ' application/vnd.hp-hpgl')],
         "gcode": [('Content-type', 'text/plain; charset=utf-8')],
@@ -73,6 +76,8 @@ class Formats:
             surface = SVGSurface()
         elif fmt == "lbrn2":
             surface = LBRN2Surface()
+        elif fmt == "stl":
+            surface = STLSurface()
         else:
             surface = PSSurface()
 

@@ -711,6 +711,8 @@ class BServer:
             extension = box.format
             if extension == "svg_Ponoko":
                 extension = "svg"
+            elif extension == "stl":
+                extension = "zip"
             http_headers.append(('Content-Disposition', f'attachment; filename="{box.__class__.__name__}.{extension}"'))
         start_response(status, http_headers)
         return environ['wsgi.file_wrapper'](data, 512 * 1024)

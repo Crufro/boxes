@@ -179,9 +179,10 @@ def multi_generate(config_path : Path|str|TextIO, output_path : Path|str, output
                 )
 
             # Write the output - if count is provided generate multiple copies
+            extension = "zip" if format == "stl" else format
             if box_settings.get("count") is not None:
                 for jj in range(int(box_settings.get("count"))):
-                    output_file = os.path.join(output_path, f"{output_fname}_{jj}.{format}")
+                    output_file = os.path.join(output_path, f"{output_fname}_{jj}.{extension}")
                     print(f"Writing {output_file}")
                     with open(output_file, "wb") as ff:
                         ff.write(data.read())
@@ -189,7 +190,7 @@ def multi_generate(config_path : Path|str|TextIO, output_path : Path|str, output
                     generated_files.append(output_file)
 
             else:
-                output_file = os.path.join(output_path, f"{output_fname}.{format}")
+                output_file = os.path.join(output_path, f"{output_fname}.{extension}")
                 print(f"Writing {output_file}")
                 with open(output_file, "wb") as ff:
                     ff.write(data.read())

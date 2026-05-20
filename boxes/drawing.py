@@ -88,6 +88,7 @@ class Surface:
 
     def new_part(self, name="part"):
         if self.parts and len(self.parts[-1].pathes) == 0:
+            self.parts[-1].name = name
             return self._p
         p = Part(name)
         self.parts.append(p)
@@ -106,6 +107,9 @@ class Surface:
     def move_to(self, *xy):
         self._p.move_to(*xy)
 
+    def set_part_name(self, name):
+        self._p.name = name
+
     def extents(self):
         if not self.parts:
             return Extents()
@@ -114,6 +118,7 @@ class Surface:
 
 class Part:
     def __init__(self, name) -> None:
+        self.name = name
         self.pathes: list[Any] = []
         self.path: list[Any] = []
 
@@ -401,8 +406,11 @@ class Context:
         # self.stroke()
 
     ## additional methods
-    def new_part(self):
-        self._dwg.new_part()
+    def new_part(self, name="part"):
+        self._dwg.new_part(name)
+
+    def set_part_name(self, name):
+        self._dwg.set_part_name(name)
 
 
 class SVGSurface(Surface):
