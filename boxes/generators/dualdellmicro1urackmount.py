@@ -18,6 +18,29 @@ import copy
 from boxes import *
 
 
+class CenterDividerFingerEdge(edges.FingerJointEdge):
+    """Finger edge matching the two centered divider slots."""
+
+    def __init__(self, boxes, settings, offset=0.0) -> None:
+        super().__init__(boxes, settings)
+        self.offset = offset
+
+    def __call__(self, length, bedBolts=None, bedBoltSettings=None, **kw):
+        s, f = self.settings.space, self.settings.finger
+        style = self.settings.style
+
+        start = 0.5 * (length - (s + f)) + self.offset
+        end = length - start - 2 * f - s
+        l1, l2 = self.fingerLength(self.settings.angle)
+        h = l1 - l2
+
+        self.edge(start, tabs=1)
+        self.draw_finger(f, h, style, True, True)
+        self.edge(s)
+        self.draw_finger(f, h, style, True, False)
+        self.edge(end, tabs=1)
+
+
 class DualDellMicro1URackMount(Boxes):
     """Closed box with screw on top for mounting two Dell Micro PCs in a 1U 19" rack."""
 
@@ -47,6 +70,10 @@ class DualDellMicro1URackMount(Boxes):
         front_settings.thickness = front_t
         front_settings.edgeObjects(self, chars="gGH")
         self.frontFingerHolesAt = edges.FingerHoles(self, front_settings)
+        self.centerDividerBackEdge = CenterDividerFingerEdge(
+            self, self.edges["f"].settings)
+        self.centerDividerFrontEdge = CenterDividerFingerEdge(
+            self, front_settings, -front_settings.finger)
 
     def wallxCB(self, fingerHoles=None):
         t = self.thickness
@@ -228,7 +255,11 @@ class DualDellMicro1URackMount(Boxes):
 
         self.rectangularWall(x, y, "gFFF", callback=[self.bottomCB],
                              move="up", label="bottom")
-        self.rectangularWall(y, h, "ffeg", move="up", label="middle")
+        self.rectangularWall(
+            y, h,
+            [self.edges["f"], self.centerDividerBackEdge,
+             self.edges["e"], self.centerDividerFrontEdge],
+            move="up", label="middle")
 
         support_r = tr
         self.rectangularTriangle(tr, tr, "gfe", r=support_r, num=2, move="right",
