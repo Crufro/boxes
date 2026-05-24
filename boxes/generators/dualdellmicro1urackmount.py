@@ -66,14 +66,25 @@ class DualDellMicro1URackMount(Boxes):
     def _setup_front_finger_joints(self):
         front_t = self.front_thickness or self.thickness
         self.front_t = front_t
-        front_settings = copy.deepcopy(self.edges["f"].settings)
-        front_settings.thickness = front_t
-        front_settings.edgeObjects(self, chars="gGH")
-        self.frontFingerHolesAt = edges.FingerHoles(self, front_settings)
+
+        front_finger_settings = copy.deepcopy(self.edges["f"].settings)
+        front_finger_settings.thickness = front_t
+        front_finger_edge = front_finger_settings.edgeObjects(self, add=False)[0]
+        front_finger_edge.char = "g"
+        self.addPart(front_finger_edge)
+
+        front_panel_settings = copy.deepcopy(self.edges["f"].settings)
+        front_panel_edges = front_panel_settings.edgeObjects(self, add=False)
+        front_panel_edges[1].char = "G"
+        front_panel_edges[2].char = "H"
+        self.addPart(front_panel_edges[1])
+        self.addPart(front_panel_edges[2])
+        self.frontPanelFingerHolesAt = edges.FingerHoles(self, front_panel_settings)
+
         self.centerDividerBackEdge = CenterDividerFingerEdge(
             self, self.edges["f"].settings)
         self.centerDividerFrontEdge = CenterDividerFingerEdge(
-            self, front_settings, -front_settings.finger)
+            self, front_finger_settings, -front_finger_settings.finger)
 
     def wallxCB(self, fingerHoles=None):
         t = self.thickness
@@ -83,12 +94,12 @@ class DualDellMicro1URackMount(Boxes):
         self.centerDividerFingerHoles(fingerHoles)
 
     def wallxFrontCB(self):
-        ht = self.frontFingerHolesAt.settings.thickness
-        edge_width = self.frontFingerHolesAt.settings.edge_width
-        corner_y = self.h - edge_width - 0.5 * ht + max(0.0, ht - self.thickness)
-        self.frontFingerHolesAt(0, corner_y, self.triangle, 0)
-        self.frontFingerHolesAt(self.x, corner_y, self.triangle, 180)
-        self.centerDividerFingerHoles(self.frontFingerHolesAt)
+        ht = self.frontPanelFingerHolesAt.settings.thickness
+        edge_width = self.frontPanelFingerHolesAt.settings.edge_width
+        corner_y = self.h - edge_width - 0.5 * ht
+        self.frontPanelFingerHolesAt(0, corner_y, self.triangle, 0)
+        self.frontPanelFingerHolesAt(self.x, corner_y, self.triangle, 180)
+        self.centerDividerFingerHoles(self.frontPanelFingerHolesAt)
 
     def centerDividerFingerHoles(self, fingerHoles):
         settings = fingerHoles.settings
@@ -126,16 +137,15 @@ class DualDellMicro1URackMount(Boxes):
 
     def wallxfCB(self): # front
         t = self.thickness
-        front_t = self.front_t
-        for x in (8.5, self.x + 2 * 17. + 2 * front_t - 8.5):
+        for x in (8.5, self.x + 2 * 17. + 2 * t - 8.5):
             for y in (6., self.h-6.+t):
                 self.rectangularHole(x, y, 10, 6.5, r=3.25)
 
         slot_w, slot_h, edge_margin = 184., 31., 10.
         tab_w, tab_h, fillet_r = 18., 7., 3.
-        cy = (self.h + t) / 2. + max(0.0, self.front_t - t) + 2.0
-        left_cx = front_t + 17. + edge_margin + slot_w / 2.
-        right_cx = front_t + 17. + self.x - edge_margin - slot_w / 2.
+        cy = (self.h + t) / 2. + 2.0
+        left_cx = t + 17. + edge_margin + slot_w / 2.
+        right_cx = t + 17. + self.x - edge_margin - slot_w / 2.
         # left slot: L-shape with notch at top-left, fillet at inner corner
         with self.saved_context():
             BL_x = left_cx - slot_w / 2.
@@ -186,8 +196,8 @@ class DualDellMicro1URackMount(Boxes):
         self.fingerHolesAt(self.y, self.h-1.5*t, self.triangle, 180)
 
     def _frontFlangedWall(self, x, y, edges="FFFF", flanges=None, r=0.0,
-                          callback=None, move=None, label=""):
-        t = self.frontFingerHolesAt.settings.thickness
+                          callback=None, move=None, label="", part_thickness=None):
+        t = self.thickness
 
         if not flanges:
             flanges = [0.0] * 4
@@ -205,6 +215,9 @@ class DualDellMicro1URackMount(Boxes):
         if self.move(tw, th, move, True):
             return
 
+        if part_thickness is not None:
+            self.ctx.set_part_thickness(part_thickness)
+
         rl = min(r, max(flanges[-1], flanges[0]))
         self.moveTo(rl + edges[-1].margin(), edges[0].margin())
 
@@ -216,7 +229,7 @@ class DualDellMicro1URackMount(Boxes):
             self.cc(callback, i, x=-rl)
             if flanges[i]:
                 if edges[i] in (self.edges["G"], self.edges["H"]):
-                    self.frontFingerHolesAt(
+                    self.frontPanelFingerHolesAt(
                         flanges[i-1] + edges[i-1].endWidth() - rl,
                         0.5*t + flanges[i], l, angle=0)
                 self.edge(l + flanges[i-1] + flanges[i+1] +
@@ -247,7 +260,8 @@ class DualDellMicro1URackMount(Boxes):
         self.rectangularWall(y, h, "ffeg", callback=[self.wallyCB],
                              move="right", label="right")
         self._frontFlangedWall(x, h, "GGEG", callback=[self.wallxfCB], r=t,
-                               flanges=[0., 17., -t, 17.], move="up", label="front")
+                               flanges=[0., 17., -t, 17.], move="up", label="front",
+                               part_thickness=self.front_t)
         self.rectangularWall(x, h, "fFeF", callback=[self.wallxbCB],
                              label="back")
         self.rectangularWall(y, h, "ffeg", callback=[self.wallyCB],

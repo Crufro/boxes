@@ -110,6 +110,9 @@ class Surface:
     def set_part_name(self, name):
         self._p.name = name
 
+    def set_part_thickness(self, thickness):
+        self._p.thickness = thickness
+
     def extents(self):
         if not self.parts:
             return Extents()
@@ -119,6 +122,7 @@ class Surface:
 class Part:
     def __init__(self, name) -> None:
         self.name = name
+        self.thickness = None
         self.pathes: list[Any] = []
         self.path: list[Any] = []
 
@@ -411,6 +415,9 @@ class Context:
 
     def set_part_name(self, name):
         self._dwg.set_part_name(name)
+
+    def set_part_thickness(self, thickness):
+        self._dwg.set_part_thickness(thickness)
 
 
 class SVGSurface(Surface):

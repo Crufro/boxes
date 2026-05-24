@@ -332,8 +332,9 @@ class STLSurface(Surface):
         ]
 
         facets: list[tuple[tuple[float, float, float], ...]] = []
+        thickness = getattr(part, "thickness", None) or self.thickness
         for polygon in normalized:
-            facets.extend(_polygon_facets(polygon, self.thickness))
+            facets.extend(_polygon_facets(polygon, thickness))
 
         name = _safe_name(getattr(part, "name", ""), used, index)
         _validate_facets(facets, name)
